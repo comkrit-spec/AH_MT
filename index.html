@@ -4,120 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบแสดงสถานะเครื่องจักร</title>
-    <!-- เรียกใช้ Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- เรียกใช้ FontAwesome สำหรับไอคอน -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ฟอนต์ภาษาไทย */
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Sarabun', sans-serif; }
         
-        /* Loading Spinner */
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ซ่อนส่วนอื่นเวลาสั่ง Print สติกเกอร์ QR Code */
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: flex-start; padding-top: 20px; }
+            /* กำหนดขนาดสติกเกอร์คร่าวๆ */
+            .label-box { border: 2px solid #000; padding: 20px; text-align: center; width: 300px; border-radius: 10px; page-break-inside: avoid; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex h-screen overflow-hidden">
 
-    <!-- Sidebar (เมนูด้านซ้ายตามแบบร่าง) -->
+    <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-lg flex flex-col justify-between hidden md:flex h-full z-10">
         <div>
-            <!-- Logo -->
             <div class="h-20 flex items-center justify-center border-b border-gray-200">
-                <h1 class="text-3xl font-bold text-blue-600 italic">LOGO</h1>
+                <h1 class="text-3xl font-bold text-blue-600 italic">M-MAINTAIN</h1>
             </div>
-            <!-- Navigation -->
             <nav class="p-4 space-y-2">
-                <a href="#" class="block px-4 py-3 bg-blue-50 text-blue-700 rounded-lg font-medium">
-                    <i class="fas fa-th-large mr-2"></i> ภาพรวม
-                </a>
-                <a href="#" class="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium">
-                    <i class="fas fa-tools mr-2"></i> ซ่อมบำรุง
-                </a>
-                <a href="#" class="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium">
-                    <i class="fas fa-edit mr-2"></i> อัพเดทสถานะ
-                </a>
-                <a href="#" class="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium">
-                    <i class="fas fa-chart-bar mr-2"></i> Report รายงาน
-                </a>
+                <button onclick="switchView('overview')" id="menu-overview" class="w-full text-left block px-4 py-3 bg-blue-50 text-blue-700 rounded-lg font-medium transition">
+                    <i class="fas fa-th-large mr-2 w-5"></i> ภาพรวม
+                </button>
+                <button onclick="switchView('update')" id="menu-update" class="w-full text-left block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition">
+                    <i class="fas fa-tools mr-2 w-5"></i> แจ้งซ่อม / อัปเดต
+                </button>
             </nav>
         </div>
-        
-        <!-- Bottom Settings & Profile -->
         <div class="p-4 border-t border-gray-200">
-            <a href="#" class="block px-4 py-2 text-gray-600 hover:text-gray-900 mb-2">
-                <i class="fas fa-cog mr-2"></i> การตั้งค่า
-            </a>
             <div class="px-4 py-3 bg-gray-50 rounded-lg mb-3">
-                <p class="text-sm text-gray-500">Login</p>
-                <p class="font-semibold text-gray-800">นายสมชาย ช่างยนต์</p>
+                <p class="text-sm text-gray-500">พนักงาน / ผู้ใช้งาน</p>
+                <p class="font-semibold text-gray-800">Scan & Report</p>
             </div>
-            <button class="w-full border border-red-500 text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-colors">
-                Logout
-            </button>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full relative">
-        <!-- Header (สำหรับมือถือ) -->
-        <header class="md:hidden bg-white shadow p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-blue-600 italic">LOGO</h1>
-            <button class="text-gray-600"><i class="fas fa-bars text-2xl"></i></button>
+    <main class="flex-1 flex flex-col h-full relative w-full">
+        <header class="md:hidden bg-white shadow p-4 flex justify-between items-center z-10">
+            <h1 class="text-xl font-bold text-blue-600 italic">M-MAINTAIN</h1>
+            <div class="flex gap-2">
+                <button onclick="switchView('overview')" class="text-gray-600 px-2"><i class="fas fa-th-large"></i></button>
+                <button onclick="switchView('update')" class="text-gray-600 px-2"><i class="fas fa-tools"></i></button>
+            </div>
         </header>
 
-        <!-- Content Area -->
-        <div class="p-6 overflow-y-auto flex-1">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">สถานะเครื่องจักร (ภาพรวม)</h2>
-                <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
-                    <i class="fas fa-sync-alt mr-2"></i>รีเฟรชข้อมูล
-                </button>
-            </div>
-
+        <div class="p-4 md:p-6 overflow-y-auto flex-1 w-full relative">
+            
             <!-- Loading State -->
-            <div id="loading" class="flex flex-col items-center justify-center py-20">
+            <div id="loading" class="absolute inset-0 bg-gray-100 bg-opacity-80 flex flex-col items-center justify-center z-20 hidden">
                 <div class="loader mb-4"></div>
-                <p class="text-gray-500">กำลังโหลดข้อมูลจาก Google Sheets...</p>
+                <p class="text-gray-600 font-medium" id="loading-text">กำลังประมวลผล...</p>
             </div>
 
-            <!-- Grid สำหรับใส่ Card (ตามแบบร่าง) -->
-            <div id="machine-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden">
-                <!-- ข้อมูลจะถูกสร้างที่นี่ด้วย JavaScript -->
+            <!-- ================= VIEW: ภาพรวม (Overview) ================= -->
+            <div id="view-overview" class="view-section">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800">สถานะเครื่องจักร (ภาพรวม)</h2>
+                    <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center transition">
+                        <i class="fas fa-sync-alt mr-2"></i> โหลดข้อมูลใหม่
+                    </button>
+                </div>
+                <div id="machine-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- การ์ดจะถูกสร้างที่นี่ -->
+                </div>
             </div>
+
+            <!-- ================= VIEW: แจ้งซ่อม (Update/Report) ================= -->
+            <div id="view-update" class="view-section hidden max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2"><i class="fas fa-clipboard-list text-blue-500 mr-2"></i>ฟอร์มแจ้งซ่อม / อัปเดตสถานะ</h2>
+                
+                <form id="update-form" onsubmit="submitUpdate(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">รหัสเครื่องจักร / Machine ID *</label>
+                        <!-- จะดึงรายการเครื่องมาใส่ใน Dropdown นี้ -->
+                        <select id="form-machine-id" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50">
+                            <option value="">-- กรุณารอโหลดข้อมูล --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">อัปเดตสถานะเครื่อง *</label>
+                        <select id="form-status" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="🔴 แจ้งซ่อม / เครื่องเสีย">🔴 แจ้งซ่อม / เครื่องเสีย</option>
+                            <option value="🟡 รอตรวจสอบ / ซ่อมบำรุง">🟡 รอตรวจสอบ / ซ่อมบำรุง</option>
+                            <option value="🟢 พร้อมใช้งาน / ปกติ">🟢 พร้อมใช้งาน / ปกติ</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">อาการที่พบ (Issue)</label>
+                        <textarea id="form-issue" rows="2" placeholder="เช่น มอเตอร์มีเสียงดัง, สายพานขาด" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">การแก้ไขเบื้องต้น (Action Taken)</label>
+                        <input type="text" id="form-action" placeholder="เช่น เปลี่ยนลูกปืน (ถ้าพึ่งแจ้งให้เว้นว่าง)" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้แจ้ง / ช่าง (Reporter) *</label>
+                        <input type="text" id="form-tech" required placeholder="ชื่อของคุณ" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition text-lg">
+                            บันทึกข้อมูล (Submit)
+                        </button>
+                    </div>
+                </form>
+            </div>
+
         </div>
     </main>
 
-    <!-- Modal สำหรับดูประวัติ (Pop-up) -->
-    <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-2xl max-h-[90vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
-                <h3 class="text-lg font-bold" id="modal-title">ประวัติการซ่อม: เครื่อง...</h3>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+    <!-- Modal ดูประวัติ -->
+    <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h3 class="text-lg font-bold text-gray-800" id="modal-title">ประวัติการซ่อม</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-times text-2xl"></i></button>
             </div>
-            <div class="p-4 overflow-y-auto flex-1">
+            <div class="p-0 md:p-4 overflow-y-auto flex-1">
                 <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b">
-                            <th class="py-2 px-3">วันที่</th>
-                            <th class="py-2 px-3">อาการ</th>
-                            <th class="py-2 px-3">การแก้ไข</th>
-                            <th class="py-2 px-3">ช่าง</th>
+                    <thead class="bg-gray-100 hidden md:table-header-group">
+                        <tr>
+                            <th class="py-2 px-3 text-sm font-semibold text-gray-600">วันที่</th>
+                            <th class="py-2 px-3 text-sm font-semibold text-gray-600">อาการ</th>
+                            <th class="py-2 px-3 text-sm font-semibold text-gray-600">การแก้ไข</th>
+                            <th class="py-2 px-3 text-sm font-semibold text-gray-600">ผู้ทำ</th>
                         </tr>
                     </thead>
-                    <tbody id="modal-body">
-                        <!-- ข้อมูลประวัติจะแสดงที่นี่ -->
+                    <tbody id="modal-body" class="block md:table-row-group">
+                        <!-- History injected here -->
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Print Area (สำหรับ QR Code สติกเกอร์) ซ่อนไว้ตลอดเวลา จะโชว์แค่ตอน Print -->
+    <div id="print-area" class="hidden">
+        <div class="label-box">
+            <h2 class="text-xl font-bold mb-1">M-MAINTAIN</h2>
+            <p class="text-sm border-b pb-2 mb-2">ระบบสแกนแจ้งซ่อม</p>
+            <h1 class="text-3xl font-extrabold mb-1" id="print-id">M-001</h1>
+            <p class="text-md mb-2 font-semibold" id="print-name">ชื่อเครื่อง</p>
+            <p class="text-sm mb-4 bg-gray-200 inline-block px-2 rounded" id="print-location">สถานที่</p>
+            
+            <div class="flex justify-center mb-2">
+                <img id="print-qr" src="" alt="QR Code" class="w-40 h-40 border border-gray-300 p-1">
+            </div>
+            <p class="text-xs">สแกนเพื่อแจ้งซ่อมทันที</p>
         </div>
     </div>
 
@@ -128,8 +178,62 @@
         const GAS_URL = "ใส่_URL_ของ_GAS_ที่นี่"; 
 
         let globalHistory = [];
+        let globalMachines = [];
 
-        // ฟังก์ชันกำหนดสีของจุดสถานะตามแบบร่าง (เขียว/เหลือง/แดง)
+        function showLoading(show, text="กำลังประมวลผล...") {
+            document.getElementById('loading-text').innerText = text;
+            if(show) document.getElementById('loading').classList.remove('hidden');
+            else document.getElementById('loading').classList.add('hidden');
+        }
+
+        // ระบบเปลี่ยนหน้า (Navigation)
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            
+            // เปลี่ยนสีเมนู
+            document.querySelectorAll('aside nav button').forEach(el => {
+                el.classList.remove('bg-blue-50', 'text-blue-700');
+                el.classList.add('text-gray-600');
+            });
+            const activeMenu = document.getElementById(`menu-${viewName}`);
+            if(activeMenu) {
+                activeMenu.classList.add('bg-blue-50', 'text-blue-700');
+                activeMenu.classList.remove('text-gray-600');
+            }
+        }
+
+        async function fetchData() {
+            showLoading(true, "กำลังโหลดข้อมูลจากฐานข้อมูล...");
+            try {
+                if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") {
+                    alert("กรุณาใส่ GAS URL ในโค้ดก่อนใช้งานจริง (ตอนนี้แสดงข้อมูลจำลอง)");
+                    processData(getMockData());
+                    return;
+                }
+                const response = await fetch(GAS_URL);
+                const data = await response.json();
+                if (data.status === "success") {
+                    processData(data);
+                } else {
+                    alert("เกิดข้อผิดพลาด: " + data.message);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function processData(data) {
+            globalMachines = data.machines;
+            globalHistory = data.history;
+            renderCards(globalMachines);
+            populateDropdown(globalMachines);
+            checkUrlParams(); // เช็คว่าสแกน QR โค้ดมาหรือเปล่า
+        }
+
         function getStatusDotColor(statusStr) {
             if (!statusStr) return "bg-gray-400";
             if (statusStr.includes("พร้อม") || statusStr.includes("ปกติ") || statusStr.includes("🟢")) return "bg-green-500 shadow-green-300";
@@ -138,82 +242,59 @@
             return "bg-gray-400";
         }
 
-        async function fetchData() {
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('machine-grid').classList.add('hidden');
-            
-            try {
-                // หากยังไม่ได้ใส่ GAS_URL ให้ใช้ข้อมูลจำลอง (Mock Data) ไปก่อนเพื่อดู UI
-                if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") {
-                    console.log("Using Mock Data since GAS_URL is not set.");
-                    renderCards(getMockData().machines);
-                    globalHistory = getMockData().history;
-                    return;
-                }
-
-                const response = await fetch(GAS_URL);
-                const data = await response.json();
-                
-                if (data.status === "success") {
-                    globalHistory = data.history;
-                    renderCards(data.machines);
-                } else {
-                    alert("เกิดข้อผิดพลาด: " + data.message);
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                alert("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
-            } finally {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('machine-grid').classList.remove('hidden');
-            }
-        }
-
         function renderCards(machines) {
             const grid = document.getElementById('machine-grid');
             grid.innerHTML = "";
 
             machines.forEach(machine => {
                 const dotColor = getStatusDotColor(machine.Status);
-                // ตัด Emoji ออกจากสถานะเพื่อให้ข้อความดูเป็นทางการ
                 const cleanStatus = machine.Status ? machine.Status.replace(/[🟢🔴🟡]/g, '').trim() : "N/A";
 
                 const cardHTML = `
-                    <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden relative group">
-                        <!-- ปุ่มรายละเอียดเครื่อง (Top Right มุมขวาบนตามแบบร่าง) -->
-                        <button onclick="openModal('${machine.Machine_ID}')" class="absolute top-2 right-2 z-10 bg-white bg-opacity-90 text-blue-600 rounded p-2 shadow hover:bg-blue-50 transition" title="รายละเอียด/ประวัติ">
-                            <i class="fas fa-file-alt"></i>
-                        </button>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative group hover:shadow-md transition">
                         
-                        <!-- พื้นที่รูปภาพ (Image Placeholder) -->
-                        <div class="h-40 bg-gray-200 flex flex-col items-center justify-center text-gray-400 relative">
-                            <i class="fas fa-cogs text-4xl mb-2"></i>
-                            <span class="text-sm">รูปภาพเครื่อง</span>
+                        <!-- เมนูมุมขวาบน (พิมพ์ QR & ดูประวัติ) -->
+                        <div class="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                            <button onclick="printQR('${machine.Machine_ID}', '${machine.Name}', '${machine.Location}')" class="bg-white bg-opacity-90 text-gray-700 rounded p-2 shadow-sm hover:bg-gray-100 transition border" title="พิมพ์สติกเกอร์ QR">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button onclick="openModal('${machine.Machine_ID}')" class="bg-white bg-opacity-90 text-blue-600 rounded p-2 shadow-sm hover:bg-blue-50 transition border" title="ประวัติการซ่อม">
+                                <i class="fas fa-history"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="h-32 bg-slate-100 flex flex-col items-center justify-center text-slate-300 relative border-b border-gray-100">
+                            <i class="fas fa-cogs text-4xl mb-1"></i>
                         </div>
 
-                        <!-- เนื้อหาการ์ด -->
                         <div class="p-4 relative">
-                            <div class="flex justify-between items-start mb-2">
+                            <div class="flex justify-between items-start mb-2 pr-8">
                                 <div>
                                     <h3 class="font-bold text-xl text-gray-800">${machine.Machine_ID}</h3>
-                                    <p class="text-sm text-gray-500">${machine.Name}</p>
+                                    <p class="text-sm font-medium text-gray-600 truncate w-40">${machine.Name}</p>
+                                    <!-- 📌 เพิ่มสถานที่ตรงนี้ -->
+                                    <p class="text-xs text-gray-500 mt-1"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> ${machine.Location || 'ไม่ระบุสถานที่'}</p>
                                 </div>
-                                <!-- จุดสถานะ (Status Dot ตามแบบร่าง) -->
-                                <div class="flex items-center gap-2 mt-1">
+                                <div class="flex items-center absolute right-4 top-4">
                                     <div class="w-4 h-4 rounded-full ${dotColor} shadow-md border-2 border-white"></div>
                                 </div>
                             </div>
                             
-                            <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-end">
+                            <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between items-end">
                                 <div>
-                                    <p class="text-xs text-gray-500 mb-1">สถานะ</p>
-                                    <p class="font-semibold text-gray-700">${cleanStatus}</p>
+                                    <p class="text-[10px] text-gray-400 mb-0.5">สถานะปัจจุบัน</p>
+                                    <p class="text-sm font-semibold text-gray-700">${cleanStatus}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-[10px] text-gray-400">อัพเดทล่าสุด</p>
+                                    <p class="text-[10px] text-gray-400">อัปเดตล่าสุด</p>
                                     <p class="text-xs text-gray-500">${machine.Last_Update}</p>
                                 </div>
                             </div>
+                            
+                            <!-- ปุ่มลัดสำหรับไปหน้าแจ้งซ่อม -->
+                            <button onclick="jumpToUpdate('${machine.Machine_ID}')" class="w-full mt-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 text-sm py-1.5 rounded transition">
+                                แจ้งซ่อมเครื่องนี้
+                            </button>
                         </div>
                     </div>
                 `;
@@ -221,53 +302,134 @@
             });
         }
 
-        // ฟังก์ชันเปิด Modal ดูประวัติ
+        // โหลดรายชื่อเข้า Dropdown หน้าฟอร์ม
+        function populateDropdown(machines) {
+            const select = document.getElementById('form-machine-id');
+            select.innerHTML = `<option value="">-- เลือกหมายเลขเครื่องจักร --</option>`;
+            machines.forEach(m => {
+                select.innerHTML += `<option value="${m.Machine_ID}">${m.Machine_ID} : ${m.Name}</option>`;
+            });
+        }
+
+        // ================= ฟังก์ชันส่งฟอร์ม (POST to GAS) =================
+        async function submitUpdate(e) {
+            e.preventDefault(); // ป้องกันเว็บโหลดใหม่
+            if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") {
+                alert("ต้องเชื่อมต่อ GAS URL ก่อนถึงจะบันทึกข้อมูลได้จริงครับ");
+                return;
+            }
+
+            // รวบรวมข้อมูลจากฟอร์ม
+            const payload = {
+                action: "update",
+                Machine_ID: document.getElementById('form-machine-id').value,
+                Status: document.getElementById('form-status').value,
+                Issue: document.getElementById('form-issue').value,
+                Action_Taken: document.getElementById('form-action').value,
+                Technician: document.getElementById('form-tech').value
+            };
+
+            showLoading(true, "กำลังบันทึกข้อมูล...");
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // ข้อจำกัด GAS ต้องใช้ text/plain
+                });
+                
+                const result = await response.json();
+                if(result.status === "success") {
+                    alert("บันทึกข้อมูลสำเร็จ!");
+                    document.getElementById('update-form').reset();
+                    fetchData(); // โหลดข้อมูลใหม่
+                    switchView('overview'); // กลับไปหน้าแรก
+                } else {
+                    alert("เกิดข้อผิดพลาด: " + result.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("บันทึกไม่สำเร็จ ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ================= ฟังก์ชันพิมพ์ QR Code =================
+        function printQR(id, name, location) {
+            // ดึง URL ของเว็บเราตอนนี้ (ตัด parameter เก่าทิ้ง)
+            const baseUrl = window.location.href.split('?')[0]; 
+            const scanUrl = `${baseUrl}?scan=${id}`; // URL ที่แนบไปใน QR
+
+            // สร้าง QR ผ่าน API
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(scanUrl)}`;
+
+            // จัดเตรียมหน้าพิมพ์
+            document.getElementById('print-id').innerText = id;
+            document.getElementById('print-name').innerText = name;
+            document.getElementById('print-location').innerText = location;
+            document.getElementById('print-qr').src = qrApiUrl;
+
+            // รอรูปโหลดเสร็จแล้วค่อยสั่งปรินต์
+            document.getElementById('print-qr').onload = function() {
+                window.print();
+            }
+        }
+
+        // ================= ฟังก์ชันเช็คว่าสแกน QR มาหรือไม่ =================
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const scanId = urlParams.get('scan');
+            if (scanId) {
+                jumpToUpdate(scanId);
+            }
+        }
+
+        function jumpToUpdate(id) {
+            switchView('update');
+            document.getElementById('form-machine-id').value = id;
+            document.getElementById('form-status').value = "🔴 แจ้งซ่อม / เครื่องเสีย"; // Default เวลากดแจ้งซ่อม
+        }
+
+        // Modal Functions (รองรับมือถือดีขึ้น)
         function openModal(machineId) {
-            document.getElementById('modal-title').innerText = `ประวัติการทำงาน: ${machineId}`;
+            document.getElementById('modal-title').innerText = `ประวัติ: ${machineId}`;
             const tbody = document.getElementById('modal-body');
             tbody.innerHTML = "";
-
             const history = globalHistory.filter(h => h.Machine_ID === machineId);
 
             if (history.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">ไม่มีประวัติการซ่อม</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-500">ยังไม่มีประวัติการซ่อม</td></tr>`;
             } else {
                 history.forEach(item => {
+                    // Mobile Card Design สำหรับตาราง
                     tbody.innerHTML += `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="py-2 px-3 text-sm">${item.Timestamp.substring(0, 10)}</td>
-                            <td class="py-2 px-3 text-sm">${item.Issue}</td>
-                            <td class="py-2 px-3 text-sm">${item.Action_Taken}</td>
-                            <td class="py-2 px-3 text-sm">${item.Technician}</td>
+                        <tr class="block md:table-row border-b md:border-none mb-4 md:mb-0 bg-white md:bg-transparent shadow-sm md:shadow-none p-3 rounded-lg md:hover:bg-gray-50">
+                            <td class="block md:table-cell py-1 md:py-3 px-2 md:px-3 text-sm text-gray-500 md:text-gray-700 md:border-b"><span class="font-bold md:hidden">วันที่: </span>${item.Timestamp.substring(0, 16)}</td>
+                            <td class="block md:table-cell py-1 md:py-3 px-2 md:px-3 text-sm md:border-b"><span class="font-bold md:hidden">อาการ: </span>${item.Issue}</td>
+                            <td class="block md:table-cell py-1 md:py-3 px-2 md:px-3 text-sm md:border-b text-blue-600"><span class="font-bold md:hidden text-gray-800">แก้ไข: </span>${item.Action_Taken}</td>
+                            <td class="block md:table-cell py-1 md:py-3 px-2 md:px-3 text-sm md:border-b"><span class="font-bold md:hidden">ผู้ทำ: </span><i class="fas fa-user-circle text-gray-400 mr-1"></i>${item.Technician}</td>
                         </tr>
                     `;
                 });
             }
-
             document.getElementById('history-modal').classList.remove('hidden');
         }
 
-        function closeModal() {
-            document.getElementById('history-modal').classList.add('hidden');
-        }
+        function closeModal() { document.getElementById('history-modal').classList.add('hidden'); }
 
-        // ข้อมูลจำลอง (Mock Data) สำหรับทดสอบ UI กรณีที่ยังไม่ได้เชื่อม GAS
+        // Mock Data สำรอง
         function getMockData() {
             return {
                 machines: [
-                    { Machine_ID: "AH35", Name: "เครื่องปั๊มโลหะ A", Location: "โซน 1", Status: "🟢 ปกติ", Last_Update: "23/07/2026 08:00" },
-                    { Machine_ID: "M-002", Name: "สายพาน 1", Location: "โซน B2", Status: "🔴 แจ้งซ่อม", Last_Update: "22/07/2026 15:30" },
-                    { Machine_ID: "M-003", Name: "มอเตอร์ปั๊มน้ำ", Location: "Utilities", Status: "🟡 รอตรวจสอบ", Last_Update: "20/07/2026 09:15" },
-                    { Machine_ID: "M-004", Name: "เครื่องแพ็คกิ้ง", Location: "โซน 2", Status: "🟢 ปกติ", Last_Update: "21/07/2026 11:00" }
+                    { Machine_ID: "M-001", Name: "เครื่องปั๊มโลหะ A", Location: "โซน Production 1", Status: "🟢 พร้อมใช้งาน", Last_Update: "23/07/2026 08:00" },
+                    { Machine_ID: "M-002", Name: "สายพานลำเลียง 1", Location: "โซน B2 (บรรจุ)", Status: "🔴 แจ้งซ่อม", Last_Update: "22/07/2026 15:30" },
+                    { Machine_ID: "M-003", Name: "มอเตอร์ปั๊มน้ำหลัก", Location: "ห้อง Utilities", Status: "🟡 รอตรวจสอบ", Last_Update: "20/07/2026 09:15" }
                 ],
-                history: [
-                    { Timestamp: "22/07/2026 15:30", Machine_ID: "M-002", Issue: "สายพานฉีกขาด", Action_Taken: "-", Technician: "สมชาย" },
-                    { Timestamp: "15/07/2026 10:00", Machine_ID: "AH35", Issue: "เช็คระยะ", Action_Taken: "ทำความสะอาด", Technician: "เอก" }
-                ]
+                history: []
             };
         }
 
-        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
         window.onload = fetchData;
     </script>
 </body>
