@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f172a">
-    <link rel="manifest" href="manifest.json">
-    <title id="page-title">Smart CMMS - Enterprise</title>
+    <!-- ป้องกัน Error favicon 404 ที่ปรากฏใน Console -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <title id="page-title">Smart CMMS</title>
     
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <!-- SweetAlert2 สำหรับ Pop-up ทันสมัย -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -27,6 +27,7 @@
             .label-box { border: 2px dashed #000; padding: 15px; text-align: center; page-break-inside: avoid; } 
         }
         
+        /* Full Screen Loader (ใช้เฉพาะตอนเปิดเว็บครั้งแรก) */
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .sync-icon { animation: spin 1.5s linear infinite; }
@@ -37,16 +38,17 @@
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
 
-    <!-- Loading Overlay -->
+    <!-- Loading Overlay (ใช้ตอนเปิดระบบครั้งแรกเท่านั้น) -->
     <div id="loading" class="fixed inset-0 bg-white/80 z-50 flex flex-col items-center justify-center hidden backdrop-blur-sm">
         <div class="loader mb-4"></div>
-        <p class="text-gray-800 font-bold" id="loading-text">กำลังประมวลผล...</p>
+        <p class="text-gray-800 font-bold" id="loading-text">กำลังโหลดระบบ...</p>
     </div>
 
     <!-- ================= Sidebar ================= -->
     <aside id="sidebar" class="w-64 bg-slate-900 text-white shadow-xl flex flex-col hidden md:flex h-full z-20">
         <div class="h-20 flex items-center justify-center border-b border-slate-800 bg-slate-950 relative">
             <h1 class="text-xl font-bold text-blue-400 tracking-wider truncate px-4 w-full text-center" id="sys-logo-name">Smart CMMS</h1>
+            <!-- สัญลักษณ์ Auto Sync -->
             <div id="sync-indicator" class="absolute right-4 top-8 hidden flex items-center gap-1">
                 <i class="fas fa-sync-alt text-[10px] text-green-400 sync-icon"></i>
             </div>
@@ -64,7 +66,7 @@
                     <span><i class="fas fa-tools mr-3 w-5"></i> รับงานซ่อม</span>
                     <span id="nav-pending-badge" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span>
                 </button>
-                <button onclick="switchView('master')" id="menu-master" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-list-alt mr-3 w-5"></i> ข้อมูลเครื่อง (CRUD)</button>
+                <button onclick="switchView('master')" id="menu-master" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-list-alt mr-3 w-5"></i> ฐานข้อมูลเครื่อง (CRUD)</button>
                 <button onclick="switchView('analytics')" id="menu-analytics" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-chart-line mr-3 w-5 text-green-400"></i> สถิติวิเคราะห์ (KPI)</button>
                 
                 <div id="admin-menu" class="hidden">
@@ -89,20 +91,20 @@
 
         <div class="p-4 md:p-6 overflow-y-auto flex-1 w-full relative">
 
-            <!-- ================= 1. DASHBOARD (อัปเดต Real-time) ================= -->
+            <!-- ================= 1. DASHBOARD ================= -->
             <div id="view-overview" class="view-section">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center">
                         แดชบอร์ดสถานะเครื่องจักร 
-                        <span class="ml-3 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full border border-green-200 uppercase tracking-widest"><i class="fas fa-circle text-[8px] animate-pulse mr-1"></i> Live</span>
+                        <span class="ml-3 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full border border-green-200 uppercase tracking-widest shadow-sm"><i class="fas fa-circle text-[8px] animate-pulse mr-1"></i> Live Auto-Sync</span>
                     </h2>
-                    <button onclick="fetchData()" class="bg-white border hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-medium shadow-sm"><i class="fas fa-sync-alt mr-2 text-blue-500"></i> โหลดข้อมูลล่าสุด</button>
+                    <button onclick="fetchData()" class="bg-white border hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fas fa-sync-alt mr-2 text-blue-500"></i> ดึงข้อมูลล่าสุด</button>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center"><div class="rounded-full bg-blue-100 p-3 mr-4 text-blue-600"><i class="fas fa-cogs text-xl"></i></div><div><p class="text-xs text-gray-500">ทั้งหมด</p><h3 class="text-2xl font-bold transition-all duration-500" id="stat-total">0</h3></div></div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center"><div class="rounded-full bg-green-100 p-3 mr-4 text-green-600"><i class="fas fa-check-circle text-xl"></i></div><div><p class="text-xs text-gray-500">พร้อมใช้งาน</p><h3 class="text-2xl font-bold text-green-600 transition-all duration-500" id="stat-ready">0</h3></div></div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center"><div class="rounded-full bg-yellow-100 p-3 mr-4 text-yellow-600"><i class="fas fa-tools text-xl"></i></div><div><p class="text-xs text-gray-500">กำลังซ่อม(MT)</p><h3 class="text-2xl font-bold text-yellow-600 transition-all duration-500" id="stat-fixing">0</h3></div></div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center"><div class="rounded-full bg-red-100 p-3 mr-4 text-red-600"><i class="fas fa-exclamation-triangle text-xl"></i></div><div><p class="text-xs text-gray-500">เสีย/รอซ่อม</p><h3 class="text-2xl font-bold text-red-600 transition-all duration-500" id="stat-broken">0</h3></div></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center"><div class="rounded-full bg-blue-100 p-3 mr-4 text-blue-600"><i class="fas fa-cogs text-xl"></i></div><div><p class="text-xs text-gray-500">ทั้งหมด</p><h3 class="text-2xl font-bold" id="stat-total">0</h3></div></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center"><div class="rounded-full bg-green-100 p-3 mr-4 text-green-600"><i class="fas fa-check-circle text-xl"></i></div><div><p class="text-xs text-gray-500">พร้อมใช้งาน</p><h3 class="text-2xl font-bold text-green-600" id="stat-ready">0</h3></div></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center"><div class="rounded-full bg-yellow-100 p-3 mr-4 text-yellow-600"><i class="fas fa-tools text-xl"></i></div><div><p class="text-xs text-gray-500">กำลังซ่อม(MT)</p><h3 class="text-2xl font-bold text-yellow-600" id="stat-fixing">0</h3></div></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center"><div class="rounded-full bg-red-100 p-3 mr-4 text-red-600"><i class="fas fa-exclamation-triangle text-xl"></i></div><div><p class="text-xs text-gray-500">เสีย/รอซ่อม</p><h3 class="text-2xl font-bold text-red-600" id="stat-broken">0</h3></div></div>
                 </div>
                 <div id="machine-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
             </div>
@@ -111,44 +113,40 @@
             <div id="view-request" class="view-section hidden max-w-xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
                 <h2 class="text-xl font-bold text-red-600 mb-6 border-b pb-3"><i class="fas fa-exclamation-triangle mr-2"></i>ฟอร์มแจ้งซ่อมเครื่องจักร</h2>
                 <form id="req-form" onsubmit="submitReportIssue(event)" class="space-y-4">
-                    <div><label class="block text-sm font-semibold mb-1">เลือกเครื่องจักรที่เสีย *</label><select id="req-machine" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-50 font-bold"></select></div>
-                    <div><label class="block text-sm font-semibold mb-1">อาการเสียที่พบ *</label><textarea id="req-issue" rows="3" required placeholder="ระบุอาการให้ชัดเจน เพื่อให้ช่างเตรียมเครื่องมือ" class="w-full border rounded-xl px-4 py-2"></textarea></div>
+                    <div><label class="block text-sm font-semibold mb-1">เลือกเครื่องจักรที่เสีย *</label><select id="req-machine" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-50 font-bold outline-none focus:ring focus:ring-red-100"></select></div>
+                    <div><label class="block text-sm font-semibold mb-1">อาการเสียที่พบ *</label><textarea id="req-issue" rows="3" required placeholder="ระบุอาการให้ชัดเจน เพื่อให้ช่างเตรียมเครื่องมือ" class="w-full border rounded-xl px-4 py-2 outline-none focus:ring focus:ring-red-100"></textarea></div>
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <label class="font-bold text-sm block mb-1"><i class="fas fa-camera text-blue-500"></i> ถ่ายรูป/แนบรูปอาการเสีย (ถ้ามี):</label>
-                        <input type="file" id="req-file-img" accept="image/*" class="w-full text-xs bg-white p-1 border rounded cursor-pointer">
+                        <input type="file" id="req-file-img" accept="image/*" class="w-full text-xs bg-white p-1 border rounded cursor-pointer outline-none">
                         <input type="hidden" id="req-img-base64">
                     </div>
-                    <div><label class="block text-sm font-semibold mb-1">ชื่อผู้แจ้ง *</label><input type="text" id="req-reporter" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-100 text-gray-600 font-bold" readonly></div>
-                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow mt-4 transition">ส่งใบแจ้งซ่อม (ถึง MT ทันที)</button>
+                    <div><label class="block text-sm font-semibold mb-1">ชื่อผู้แจ้ง *</label><input type="text" id="req-reporter" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-100 text-gray-600 font-bold outline-none" readonly></div>
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl shadow mt-4 transition">ส่งใบแจ้งซ่อม (ถึง MT ทันที)</button>
                 </form>
             </div>
 
             <div id="view-relocate" class="view-section hidden max-w-xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
                 <h2 class="text-xl font-bold text-yellow-600 mb-6 border-b pb-3"><i class="fas fa-truck mr-2"></i>ฟอร์มแจ้งย้ายสถานที่ตั้งเครื่อง</h2>
                 <form id="rel-form" onsubmit="submitRelocate(event)" class="space-y-4">
-                    <div><label class="block text-sm font-semibold mb-1">เครื่องจักรที่ต้องการย้าย *</label><select id="rel-machine" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-50 font-bold"></select></div>
-                    <div><label class="block text-sm font-semibold mb-1">สถานที่ใหม่ (ปลายทาง) *</label><select id="rel-loc" required class="w-full border rounded-xl px-4 py-2.5 font-bold"></select></div>
-                    <div><label class="block text-sm font-semibold mb-1">ผู้ดำเนินการย้าย *</label><input type="text" id="rel-reporter" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-100 text-gray-600 font-bold" readonly></div>
-                    <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-xl shadow mt-4 transition">อัปเดตสถานที่พิกัดใหม่</button>
+                    <div><label class="block text-sm font-semibold mb-1">เครื่องจักรที่ต้องการย้าย *</label><select id="rel-machine" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-50 font-bold outline-none focus:ring focus:ring-yellow-100"></select></div>
+                    <div><label class="block text-sm font-semibold mb-1">สถานที่ใหม่ (ปลายทาง) *</label><select id="rel-loc" required class="w-full border rounded-xl px-4 py-2.5 font-bold outline-none focus:ring focus:ring-yellow-100"></select></div>
+                    <div><label class="block text-sm font-semibold mb-1">ผู้ดำเนินการย้าย *</label><input type="text" id="rel-reporter" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-100 text-gray-600 font-bold outline-none" readonly></div>
+                    <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3.5 rounded-xl shadow mt-4 transition">อัปเดตสถานที่พิกัดใหม่</button>
                 </form>
             </div>
 
             <!-- ================= 3. MASTER (เพิ่ม/ลบ เครื่องจักร) ================= -->
             <div id="view-master" class="view-section hidden bg-white p-6 rounded-2xl border shadow-sm">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-list-alt text-blue-600 mr-2"></i>ฐานข้อมูลเครื่องจักร (Master Data)</h2>
+                    <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-list-alt text-blue-600 mr-2"></i>ฐานข้อมูลเครื่องจักร (Master)</h2>
                     <div class="flex gap-2">
-                        <!-- ปุ่ม Toggle สลับมุมมอง Card / Table -->
                         <div class="flex rounded-lg shadow-sm border border-gray-200 overflow-hidden bg-white">
                             <button onclick="toggleMasterView('table')" id="btn-view-table" class="px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-600 border-r transition"><i class="fas fa-table mr-1"></i> ตาราง</button>
                             <button onclick="toggleMasterView('card')" id="btn-view-card" class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:bg-gray-50 transition"><i class="fas fa-th-large mr-1"></i> การ์ด</button>
                         </div>
-                        <button onclick="openAddMachineModal()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md transition"><i class="fas fa-plus mr-1"></i> เพิ่มเครื่องจักรใหม่</button>
-                        <button onclick="printSelectedQR()" class="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md transition"><i class="fas fa-print mr-1"></i> พิมพ์ QR ที่เลือก</button>
+                        <button onclick="openAddMachineModal()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md transition"><i class="fas fa-plus mr-1"></i> เพิ่มเครื่องจักร</button>
                     </div>
                 </div>
-                
-                <!-- Table View -->
                 <div id="master-table-view" class="overflow-x-auto border rounded-xl">
                     <table class="w-full text-left min-w-max">
                         <thead class="bg-gray-100">
@@ -164,29 +162,49 @@
                         <tbody id="master-table-body"></tbody>
                     </table>
                 </div>
-
-                <!-- Card View -->
-                <div id="master-card-view" class="hidden grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4"></div>
+                <div id="master-card-view" class="hidden grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2"></div>
             </div>
 
-            <!-- ================= 4. MT UPDATE (รับงานซ่อม + ปิดงาน) ================= -->
-            <div id="view-update" class="view-section hidden">
-                <div class="bg-white p-6 rounded-2xl border shadow-sm">
-                    <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-bell text-red-500 mr-2 animate-bounce"></i>รายการแจ้งซ่อม (รอดำเนินการ)</h2>
-                        <span class="text-sm bg-red-100 text-red-600 font-bold px-4 py-1 rounded-full transition-all shadow-sm" id="pending-count-main">0 เครื่องที่เสีย</span>
+            <!-- ================= 4. MT UPDATE (รับงานซ่อม + สถานะ) ================= -->
+            <div id="view-update" class="view-section hidden space-y-6">
+                <!-- ตารางงานเข้าใหม่ (สีแดง) -->
+                <div class="bg-white p-6 rounded-2xl border shadow-sm border-t-4 border-t-red-500">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 class="text-xl font-bold text-red-600"><i class="fas fa-bell mr-2 animate-bounce"></i>งานเข้าใหม่ (รอรับงาน)</h2>
+                        <span class="text-sm bg-red-100 text-red-600 font-bold px-3 py-1 rounded-full shadow-sm" id="badge-new-jobs">0 งาน</span>
                     </div>
-                    <div class="overflow-x-auto border rounded-xl">
+                    <div class="overflow-x-auto rounded-xl">
                         <table class="w-full text-left min-w-max">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-gray-50 border-b border-t">
                                 <tr>
-                                    <th class="py-3 px-4 text-xs font-semibold text-gray-500 w-32 whitespace-nowrap">เวลาที่แจ้ง</th>
-                                    <th class="py-3 px-4 text-xs font-semibold text-gray-500 w-32">รหัสเครื่อง</th>
-                                    <th class="py-3 px-4 text-xs font-semibold text-gray-500">อาการเสียที่พบ (อ้างอิงล่าสุด)</th>
-                                    <th class="py-3 px-4 text-xs font-semibold text-center text-gray-500 w-48">จัดการงาน</th>
+                                    <th class="py-2.5 px-4 text-xs font-bold text-gray-500 w-32">เวลาที่แจ้ง</th>
+                                    <th class="py-2.5 px-4 text-xs font-bold text-gray-500 w-32">รหัสเครื่อง</th>
+                                    <th class="py-2.5 px-4 text-xs font-bold text-gray-500">อาการเสียที่แจ้ง</th>
+                                    <th class="py-2.5 px-4 text-xs font-bold text-center text-gray-500 w-48">ดำเนินการ</th>
                                 </tr>
                             </thead>
-                            <tbody id="pending-jobs-body"></tbody>
+                            <tbody id="jobs-new-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ตารางงานที่กำลังดำเนินการ (สีเหลือง) -->
+                <div class="bg-white p-6 rounded-2xl border shadow-sm border-t-4 border-t-yellow-400">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 class="text-xl font-bold text-yellow-600"><i class="fas fa-tools mr-2"></i>งานกำลังดำเนินการ (รออะไหล่/กำลังซ่อม)</h2>
+                        <span class="text-sm bg-yellow-100 text-yellow-700 font-bold px-3 py-1 rounded-full shadow-sm" id="badge-ongoing-jobs">0 งาน</span>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="w-full text-left min-w-max">
+                            <thead class="bg-gray-50 border-b border-t">
+                                <tr>
+                                    <th class="py-2.5 px-4 text-xs font-bold text-gray-500 w-32">อัปเดตล่าสุด</th>
+                                    <th class="py-2.5 px-4 text-xs font-bold text-gray-500 w-32">รหัสเครื่อง</th>
+                                    <th class="py-2.5 px-4 text-xs font-bold text-gray-500">สถานะงานซ่อมปัจจุบัน</th>
+                                    <th class="py-2.5 px-4 text-xs font-bold text-center text-gray-500 w-32">ดำเนินการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobs-ongoing-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -285,11 +303,6 @@
                     <!-- Tab 4: ประวัติและระบบ -->
                     <div id="set-tab-sys" class="hidden space-y-4">
                         <h4 class="font-bold text-xl border-b pb-2 text-gray-800">เครื่องมือระบบ (System Tools)</h4>
-                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6">
-                            <p class="font-bold text-blue-800 mb-2">สั่งพิมพ์สติกเกอร์ QR Code</p>
-                            <button onclick="printAllQR()" class="bg-slate-900 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-md hover:bg-black transition"><i class="fas fa-qrcode mr-2"></i> พิมพ์ QR ทุกเครื่อง (A4)</button>
-                        </div>
-                        
                         <h5 class="font-bold text-sm text-red-600"><i class="fas fa-shield-alt mr-1"></i> ประวัติการใช้งานระบบ (Audit Log - 50 ล่าสุด)</h5>
                         <div class="overflow-y-auto h-64 border rounded-xl bg-white shadow-inner">
                             <table class="w-full text-left text-[11px]"><thead class="bg-gray-100 sticky top-0"><tr><th class="p-2 border-b w-1/4">เวลา</th><th class="p-2 border-b">ผู้กระทำ</th><th class="p-2 border-b">คำสั่ง</th><th class="p-2 border-b">รายละเอียด</th></tr></thead><tbody id="set-audit-body"></tbody></table>
@@ -330,8 +343,8 @@
                 </div>
                 
                 <div class="bg-gray-50 p-4 rounded-xl border mt-3 space-y-4">
-                    <div><label class="font-bold block mb-1.5"><i class="fas fa-image text-blue-500 mr-1"></i> อัปโหลดรูปภาพใหม่ (บีบอัดอัตโนมัติ):</label><input type="file" id="edit-file-img" accept="image/*" class="w-full bg-white p-1.5 border rounded-lg cursor-pointer text-[10px]"><input type="hidden" id="edit-img-base64"></div>
-                    <div><label class="font-bold block mb-1.5"><i class="fas fa-file-pdf text-red-500 mr-1"></i> แนบเอกสารคู่มือ/ใบประกัน (PDF):</label><input type="file" id="edit-file-doc" accept="application/pdf" class="w-full bg-white p-1.5 border rounded-lg cursor-pointer text-[10px]"><input type="hidden" id="edit-doc-base64"></div>
+                    <div><label class="font-bold block mb-1.5"><i class="fas fa-image text-blue-500 mr-1"></i> อัปโหลดรูปภาพใหม่ (บีบอัดอัตโนมัติ):</label><input type="file" id="edit-file-img" accept="image/*" class="w-full bg-white p-1.5 border rounded-lg cursor-pointer text-[10px] outline-none"><input type="hidden" id="edit-img-base64"></div>
+                    <div><label class="font-bold block mb-1.5"><i class="fas fa-file-pdf text-red-500 mr-1"></i> แนบเอกสารคู่มือ/ใบประกัน (PDF):</label><input type="file" id="edit-file-doc" accept="application/pdf" class="w-full bg-white p-1.5 border rounded-lg cursor-pointer text-[10px] outline-none"><input type="hidden" id="edit-doc-base64"></div>
                 </div>
                 <div class="flex gap-3 pt-5">
                     <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm shadow transition"><i class="fas fa-cloud-upload-alt mr-1"></i> บันทึกข้อมูล</button>
@@ -345,25 +358,25 @@
     <div id="repair-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 overflow-hidden border-t-8 border-green-500">
             <div class="flex justify-between items-center border-b pb-2 mb-3">
-                <h2 class="text-xl font-black text-gray-800"><i class="fas fa-tools text-green-500 mr-2"></i>ฟอร์มปิดงานซ่อม</h2>
+                <h2 class="text-xl font-black text-gray-800"><i class="fas fa-tools text-green-500 mr-2"></i>อัปเดตงานซ่อม</h2>
                 <button type="button" onclick="closeRepairModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div class="bg-red-50 p-4 rounded-xl my-4 border border-red-100 shadow-inner">
-                <p class="text-xs text-gray-500">กำลังซ่อมเครื่องจักร:</p>
-                <h3 class="text-2xl font-black text-red-700 tracking-wider my-1" id="repair-mac-id">-</h3>
-                <p class="text-sm font-bold text-gray-800 border-t border-red-200 pt-2 mt-2"><i class="fas fa-exclamation-circle text-red-500 mr-1"></i> อาการเสีย: <span id="repair-issue-text" class="font-normal">-</span></p>
+            <div class="bg-gray-50 p-4 rounded-xl my-4 border border-gray-200 shadow-inner">
+                <p class="text-xs text-gray-500">รหัสเครื่องจักรที่กำลังดำเนินการ:</p>
+                <h3 class="text-2xl font-black text-gray-800 tracking-wider my-1" id="repair-mac-id">-</h3>
+                <p class="text-sm font-bold text-gray-800 border-t border-gray-200 pt-2 mt-2"><i class="fas fa-exclamation-circle text-red-500 mr-1"></i> ปัญหาที่แจ้ง: <span id="repair-issue-text" class="font-normal text-red-600">-</span></p>
             </div>
             <form onsubmit="submitRepairForm(event)" class="space-y-4 text-sm">
                 <input type="hidden" id="rep-machine-id">
                 <input type="hidden" id="rep-issue">
                 <div>
-                    <label class="font-bold block mb-1">สถานะหลังซ่อม *</label>
+                    <label class="font-bold block mb-1">สถานะอัปเดตปัจจุบัน *</label>
                     <select id="rep-status" class="w-full border rounded-xl p-2.5 font-bold bg-green-50 text-green-800 focus:ring-2 focus:ring-green-400 outline-none transition">
-                        <option value="🟢 พร้อมใช้งาน / ปกติ">🟢 ปิดงาน / เครื่องพร้อมใช้งานแล้ว</option>
-                        <option value="🟡 รอตรวจสอบ / กำลังซ่อม">🟡 กำลังซ่อม / รั้งรอเบิกอะไหล่</option>
+                        <option value="🟢 พร้อมใช้งาน / ปกติ">🟢 ซ่อมเสร็จแล้ว / ปิดงาน (พร้อมใช้งาน)</option>
+                        <option value="🟡 รอตรวจสอบ / กำลังซ่อม">🟡 กำลังซ่อม / รอเบิกอะไหล่ (ดำเนินการต่อ)</option>
                     </select>
                 </div>
-                <div><label class="font-bold block mb-1">รายละเอียดการปฏิบัติงาน</label><input type="text" id="rep-action" class="w-full border rounded-xl p-2.5 bg-gray-50 focus:ring focus:ring-blue-200 outline-none" required placeholder="เช่น ถอดล้างเซนเซอร์, เปลี่ยนมอเตอร์ใหม่"></div>
+                <div><label class="font-bold block mb-1">รายละเอียดการปฏิบัติงาน</label><input type="text" id="rep-action" class="w-full border rounded-xl p-2.5 bg-gray-50 focus:ring focus:ring-blue-200 outline-none" required placeholder="เช่น ตรวจเช็คเบื้องต้น, เปลี่ยนมอเตอร์ใหม่"></div>
                 <div><label class="font-bold block mb-1">อะไหล่ที่เบิกเปลี่ยน</label><input type="text" id="rep-parts" class="w-full border rounded-xl p-2.5 bg-gray-50 focus:ring focus:ring-blue-200 outline-none" placeholder="ถ้าไม่มีให้เว้นว่าง"></div>
                 <div class="flex gap-2 items-center bg-yellow-50 p-3 rounded-xl border border-yellow-100">
                     <label class="font-bold text-yellow-800 flex-1"><i class="fas fa-clock mr-1"></i> ระยะเวลาเครื่องหยุด (Downtime):</label>
@@ -390,7 +403,7 @@
                 <!-- Tab: Info -->
                 <div id="prof-tab-info" class="space-y-4">
                     <div class="flex gap-4 items-center">
-                        <div class="w-28 h-28 bg-gray-100 rounded-xl overflow-hidden border shadow-inner"><img id="prof-img" src="" class="img-cover"></div>
+                        <div class="w-28 h-28 bg-gray-100 rounded-xl overflow-hidden border shadow-inner flex items-center justify-center"><img id="prof-img" src="" class="img-cover"></div>
                         <div>
                             <h2 class="text-3xl font-black text-gray-800 tracking-tight" id="prof-id">-</h2>
                             <p class="text-sm text-gray-600 font-bold mt-1" id="prof-name">-</p>
@@ -416,7 +429,7 @@
     <!-- 4. Modal สแกนเจอเครื่อง (Public Tool) -->
     <div id="scan-modal" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 text-center border-t-8 border-blue-600 mt-12">
-            <div class="w-24 h-24 mx-auto bg-gray-100 rounded-full overflow-hidden border-4 border-white shadow-lg -mt-16 mb-3"><img id="scan-res-img" src="" class="img-cover"></div>
+            <div class="w-24 h-24 mx-auto bg-gray-100 rounded-full overflow-hidden border-4 border-white shadow-lg -mt-16 mb-3 flex items-center justify-center"><img id="scan-res-img" src="" class="img-cover"></div>
             <span id="scan-res-status-badge" class="px-3 py-1 text-xs rounded-full font-bold bg-green-100 text-green-700 shadow-sm">🟢 พร้อมใช้งาน</span>
             <h2 class="text-3xl font-black text-gray-800 mt-3" id="scan-res-id">-</h2>
             <p class="text-sm text-gray-500 font-bold mb-4" id="scan-res-name">-</p>
@@ -443,19 +456,17 @@
         </div>
     </div>
 
-    <!-- สำหรับ Print สติกเกอร์ -->
     <div id="print-area" class="hidden"></div>
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
         // ⚠️ การตั้งค่า (Configuration) 
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwjRMmnm1-x74RPp1FeuHOrU3XFc7_BvRSYnMpqykr6Ainn_w3HpenUbCaK0jbP7SMA5Q/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbw8SVuFHGBgN6zcb_gXEtyp8CjsotIaagRxtoYuU7j9gCCGD7u37UXqXVFm-pO4donSdw/exec"; 
         const LIFF_ID = "ใส่_LIFF_ID_ของท่าน"; 
         
-        // รูปภาพ Placeholder แบบ SVG (เพื่อแก้ปัญหาโหลดรูปจากเว็บภายนอกไม่ขึ้น ERR_CONNECTION_CLOSED)
+        // รูปภาพ Placeholder แบบ SVG (เพื่อแก้ปัญหาโหลดรูปจากเว็บภายนอกไม่ขึ้น)
         const fallbackImg = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%2394a3b8'%3Eไม่มีรูปภาพ%3C/text%3E%3C/svg%3E";
 
-        // ตัวแปรเก็บข้อมูล
         let globalData = { machines: [], history: [], locations: [], users: [], settings: [], audit: [] };
         let sysSettings = { name: "Smart CMMS", format: "DD/MM/YYYY" };
         let pagedData = []; let currentPage = 1; const itemsPerPage = 10;
@@ -463,32 +474,41 @@
         let isMTUser = false; let currentUserRole = "พนักงานทั่วไป"; let liffProfileName = "พนักงานทั่วไป";
         let autoSyncTimer = null; let chartInstance = null; let currentScannedMachine = null;
 
-        // ================= Helpers (SweetAlert2) =================
-        function showAlert(title, msg, type = 'success') {
-            Swal.fire({ icon: type, title: title, text: msg, timer: 1500, showConfirmButton: false });
+        // ================= SweetAlert2 Toasts (Background Saving) =================
+        const Toast = Swal.mixin({
+            toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true,
+            didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); }
+        });
+
+        function showSaveToast(msg) {
+            Toast.fire({ icon: 'info', title: msg, timer: false, didOpen: () => { Swal.showLoading(); } });
+        }
+        function hideSaveToast(successMsg) {
+            if(successMsg) { Toast.fire({ icon: 'success', title: successMsg, timer: 2000 }); } 
+            else { Swal.close(); }
         }
         function showError(msg) {
-            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: msg, confirmButtonColor: '#3085d6', confirmButtonText: 'ตกลง' });
+            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: msg, confirmButtonColor: '#3b82f6', confirmButtonText: 'ตกลง' });
         }
 
         // ================= 1. เริ่มต้นระบบ (Initialization) =================
         window.onload = async function() {
-            showLoading("กำลังเชื่อมต่อเซิร์ฟเวอร์...");
+            document.getElementById('loading-text').innerText = "กำลังเชื่อมต่อระบบ...";
+            document.getElementById('loading').classList.remove('hidden');
             try {
                 if(LIFF_ID && LIFF_ID !== "ใส่_LIFF_ID_ของท่าน") {
                     await liff.init({ liffId: LIFF_ID });
                     if (liff.isLoggedIn()) liffProfileName = (await liff.getProfile()).displayName; 
                     else liff.login();
                 }
-            } catch(e) { console.log("LIFF Not Provided"); }
+            } catch(e) {}
             
             updateUserDisplay();
             await fetchData();
-            startAutoSync(); // เริ่มระบบซิงค์อัตโนมัติ
+            document.getElementById('loading').classList.add('hidden'); // ปิดหน้าจอโหลดแผ่นเต็ม
+            startAutoSync(); // เริ่มระบบ Auto Sync แบบไม่บังจอ
         };
 
-        function showLoading(msg) { document.getElementById('loading-text').innerText = msg; document.getElementById('loading').classList.remove('hidden'); }
-        function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
         function updateUserDisplay() { document.getElementById('user-display').innerText = currentUserRole === "พนักงานทั่วไป" ? liffProfileName : currentUserRole; }
 
         function formatDateCustom(dateStr) {
@@ -499,7 +519,7 @@
             return `${day}/${m}/${y} ${time}`;
         }
 
-        // ================= 2. ดึงข้อมูล & ซิงค์อัตโนมัติ (API) =================
+        // ================= 2. ดึงข้อมูล & Auto-Sync (API) =================
         function startAutoSync() {
             autoSyncTimer = setInterval(async () => {
                 if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") return;
@@ -511,28 +531,25 @@
                     if (data.status === "success") { 
                         globalData = data; applySettings(); 
                         renderDashboardCards(data.machines); 
-                        renderPendingJobs(data.history); 
+                        renderMTJobsList(); 
                         if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics(); 
                     }
                     setTimeout(() => { icon.classList.add('hidden'); }, 1500);
                 } catch(e) {}
-            }, 15000); // ทุกๆ 15 วินาที
+            }, 15000); // ดึงอัปเดตทุกๆ 15 วินาที
         }
 
         async function fetchData() {
-            showLoading("กำลังโหลดข้อมูลล่าสุด...");
             try {
-                if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") { showError("โปรดใส่ GAS URL ในโค้ด HTML ก่อนใช้งานจริง"); hideLoading(); return; }
+                if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") { showError("โปรดใส่ GAS URL ในโค้ด HTML ก่อนใช้งานจริง"); return; }
                 const res = await fetch(GAS_URL); const data = await res.json();
                 if (data.status === "success") { 
                     globalData = data; applySettings(); populateDropdowns(); renderDashboardCards(data.machines); 
-                    renderMasterTableView(data.machines); renderMasterCardView(data.machines); renderPendingJobs(data.history); renderSettingsPage(); applyAdvancedFilter(); 
+                    renderMasterTableView(data.machines); renderMasterCardView(data.machines); 
+                    renderMTJobsList(); renderSettingsPage(); applyAdvancedFilter(); 
                     checkUrlParams(); 
-                } else {
-                    showError("ดึงข้อมูลไม่สำเร็จ");
                 }
-            } catch (e) { showError("เชื่อมต่อฐานข้อมูลล้มเหลว กรุณาตรวจสอบอินเทอร์เน็ต"); }
-            hideLoading();
+            } catch (e) { console.log(e); }
         }
 
         function applySettings() {
@@ -559,7 +576,7 @@
 
         async function checkPinBackend() {
             const pin = document.getElementById('pin-input').value; if(!pin) return;
-            showLoading("กำลังตรวจสอบรหัส...");
+            showSaveToast("กำลังตรวจสอบรหัส...");
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "login", pin: pin }) }); const result = await res.json();
                 if (result.status === "success") {
@@ -568,10 +585,10 @@
                     if(result.role === "Admin") document.getElementById('admin-menu').classList.remove('hidden');
                     document.getElementById('btn-login-toggle').innerText = "Logout";
                     updateUserDisplay(); closeLoginModal();
-                    showAlert("สำเร็จ", `ยินดีต้อนรับคุณ ${result.name}`);
-                } else { showError(result.message); }
-            } catch(e) { showError("ระบบเครือข่ายขัดข้อง"); }
-            hideLoading(); document.getElementById('pin-input').value = "";
+                    hideSaveToast(`เข้าสู่ระบบสำเร็จ ยินดีต้อนรับคุณ ${result.name}`);
+                } else { hideSaveToast(); showError(result.message); }
+            } catch(e) { hideSaveToast(); showError("ระบบเครือข่ายขัดข้อง"); }
+            document.getElementById('pin-input').value = "";
         }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
@@ -603,16 +620,15 @@
         function toggleMasterView(mode) {
             document.getElementById('master-card-view').classList.toggle('hidden', mode !== 'card');
             document.getElementById('master-table-view').classList.toggle('hidden', mode === 'card');
-            // อัปเดตสีปุ่ม
-            document.getElementById('btn-view-card').className = mode === 'card' ? "px-4 py-2 text-xs font-bold bg-blue-50 text-blue-600 border-l transition" : "px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 border-l transition";
-            document.getElementById('btn-view-table').className = mode === 'table' ? "px-4 py-2 text-xs font-bold bg-blue-50 text-blue-600 border-r transition" : "px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 border-r transition";
+            document.getElementById('btn-view-card').className = mode === 'card' ? "px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-600 transition" : "px-3 py-1.5 text-xs font-bold text-gray-500 hover:bg-gray-50 transition";
+            document.getElementById('btn-view-table').className = mode === 'table' ? "px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-600 border-r transition" : "px-3 py-1.5 text-xs font-bold text-gray-500 hover:bg-gray-50 border-r transition";
         }
 
         function renderMasterTableView(machines) {
             const tbody = document.getElementById('master-table-body'); tbody.innerHTML = "";
             machines.forEach(m => {
                 let imgSrc = m.Image_URL && m.Image_URL.length > 5 ? m.Image_URL : fallbackImg;
-                let imgThumb = `<img src="${imgSrc}" class="w-9 h-9 rounded-md object-cover border shadow-sm">`;
+                let imgThumb = `<img src="${imgSrc}" class="w-10 h-10 rounded-md object-cover border shadow-sm">`;
                 tbody.innerHTML += `<tr class="border-b hover:bg-blue-50 transition text-xs"><td class="py-3 px-4 text-center"><input type="checkbox" value="${m.Machine_ID}" class="qr-checkbox w-4 h-4 rounded text-blue-600 cursor-pointer"></td><td class="py-3 px-4 cursor-pointer" onclick="openProfileModal('${m.Machine_ID}')">${imgThumb}</td><td class="py-3 px-4 font-black text-gray-800 cursor-pointer" onclick="openProfileModal('${m.Machine_ID}')">${m.Machine_ID}</td><td class="py-3 px-4 text-gray-600 font-medium">${m.Name}</td><td class="py-3 px-4 text-gray-500">${m.Location}</td><td class="py-3 px-4 text-center"><button onclick="openEditModal('${m.Machine_ID}')" class="bg-white text-blue-600 px-3 py-1.5 rounded-lg font-bold border border-blue-200 shadow-sm hover:bg-blue-600 hover:text-white transition"><i class="fas fa-edit"></i> แก้ไข</button></td></tr>`;
             });
         }
@@ -655,7 +671,7 @@
         }
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
 
-        // อัปโหลดภาพ & PDF
+        // อัปโหลดบีบอัดภาพ & PDF
         document.getElementById('edit-file-img').addEventListener('change', e => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=evt=>{ const img=new Image(); img.onload=()=>{ const cvs=document.createElement('canvas'); const scale=800/img.width; cvs.width=800; cvs.height=img.height*scale; cvs.getContext('2d').drawImage(img,0,0,cvs.width,cvs.height); document.getElementById('edit-img-base64').value=cvs.toDataURL('image/jpeg',0.6); }; img.src=evt.target.result; }; r.readAsDataURL(f); }});
         document.getElementById('edit-file-doc').addEventListener('change', e => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=evt=>{ document.getElementById('edit-doc-base64').value=evt.target.result; }; r.readAsDataURL(f); }});
 
@@ -664,59 +680,80 @@
             const isNew = document.getElementById('edit-is-new').value === "true";
             const payload = { action: "save_machine", isNew: isNew, currentUser: currentUserRole, Machine_ID: document.getElementById('edit-id').value, Name: document.getElementById('edit-name').value, Location: document.getElementById('edit-loc').value, Brand: document.getElementById('edit-brand').value || "-", Model: document.getElementById('edit-model').value || "-", Serial_No: document.getElementById('edit-sn').value || "-", Warranty_Exp: document.getElementById('edit-warranty').value || "-", Vendor_Contact: document.getElementById('edit-vendor').value || "-", Image_URL: document.getElementById('edit-img-base64').value || "", Document_URL: document.getElementById('edit-doc-base64').value || "" };
             
-            showLoading("กำลังอัปโหลดและบันทึกข้อมูล..."); 
+            closeEditModal(); 
+            showSaveToast("กำลังบันทึกและอัปโหลดไฟล์ (ทำงานต่อได้เลย)..."); 
             try { 
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-                closeEditModal(); 
-                showAlert("สำเร็จ", "อัปเดตข้อมูลเครื่องจักรเข้าสู่ฐานระบบแล้ว");
-                fetchData(); 
-            } catch(err) { showError("เกิดข้อผิดพลาดในการอัปโหลด"); hideLoading(); }
+                hideSaveToast("บันทึกข้อมูลเครื่องสำเร็จ");
+                fetchData(); // ดึงข้อมูลมาอัปเดตหน้าจอทันที
+            } catch(err) { hideSaveToast(); showError("เกิดข้อผิดพลาดในการเชื่อมต่อ"); }
         }
         
         async function deleteMachine() {
             const id = document.getElementById('edit-id').value; 
-            const result = await Swal.fire({ title: 'ยืนยันการลบ?', text: `ต้องการจำหน่ายเครื่อง ${id} ออกจากระบบหรือไม่? (ข้อมูลสเปคจะถูกซ่อน แต่ประวัติซ่อมจะยังคงอยู่)`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#cbd5e1', confirmButtonText: 'ใช่, ลบเลย', cancelButtonText: 'ยกเลิก' });
+            const result = await Swal.fire({ title: 'ยืนยันการลบ?', text: `ต้องการลบ/จำหน่ายเครื่อง ${id} ใช่หรือไม่? (สเปคถูกซ่อน แต่ประวัติซ่อมจะยังคงอยู่)`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#cbd5e1', confirmButtonText: 'ใช่, ลบเลย', cancelButtonText: 'ยกเลิก' });
             if (!result.isConfirmed) return;
             
-            showLoading("กำลังดำเนินการ..."); 
+            closeEditModal();
+            showSaveToast("กำลังดำเนินการลบ..."); 
             try { 
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "delete_machine", Machine_ID: id, currentUser: currentUserRole}) }); 
-                closeEditModal(); 
-                showAlert("ลบสำเร็จ", "ลบเครื่องจักรออกจากระบบแล้ว");
+                hideSaveToast("ลบข้อมูลเครื่องจักรสำเร็จ");
                 fetchData(); 
-            } catch(e) { showError("ไม่สามารถดำเนินการได้"); hideLoading(); }
+            } catch(e) { hideSaveToast(); showError("ไม่สามารถดำเนินการได้"); }
         }
 
-        // ================= 6. MT JOBS (รับงานซ่อม + ปิดงาน) =================
-        function renderPendingJobs(history) {
-            const tbody = document.getElementById('pending-jobs-body'); tbody.innerHTML = "";
-            let pending = history.filter(h => h.Issue && h.Issue !== "-" && (!h.Action_Taken || h.Action_Taken === "-")).reverse();
-            
-            let grouped = {};
-            pending.forEach(p => { if(!grouped[p.Machine_ID]) grouped[p.Machine_ID] = { count: 0, item: p }; grouped[p.Machine_ID].count++; });
-            
-            let totalUniq = Object.keys(grouped).length;
-            document.getElementById('pending-count-main').innerText = `${totalUniq} เครื่องที่เสีย`;
-            const badge = document.getElementById('nav-pending-badge'); if(totalUniq > 0) { badge.classList.remove('hidden'); badge.innerText = totalUniq; } else { badge.classList.add('hidden'); }
+        // ================= 6. MT JOBS (ติดตามสถานะแบบแยกตาราง) =================
+        function renderMTJobsList() {
+            const tbodyNew = document.getElementById('jobs-new-body'); tbodyNew.innerHTML = "";
+            const tbodyOngoing = document.getElementById('jobs-ongoing-body'); tbodyOngoing.innerHTML = "";
+            let newCount = 0, ongoingCount = 0;
 
-            if(totalUniq === 0) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400 font-medium">✨ ไม่มีรายการแจ้งซ่อมค้างในระบบ</td></tr>`; return; }
+            globalData.machines.forEach(m => {
+                if (m.Status.includes("🔴") || m.Status.includes("🟡")) {
+                    const hList = globalData.history.filter(h => h.Machine_ID === m.Machine_ID);
+                    const latestH = hList.length > 0 ? hList[hList.length - 1] : { Issue: "ไม่ระบุ", Timestamp: m.Last_Update, Issue_Image_URL: "-" };
 
-            for(let key in grouped) {
-                let g = grouped[key]; let i = g.item;
-                let dupLabel = g.count > 1 ? `<span class="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-md ml-2 font-bold shadow-sm">แจ้งซ้ำ ${g.count} รายการ</span>` : "";
-                let imgLink = i.Issue_Image_URL && i.Issue_Image_URL.length > 5 ? `<a href="${i.Issue_Image_URL}" target="_blank" class="text-blue-600 bg-blue-50 px-2 py-1 rounded ml-2 shadow-sm border border-blue-100 inline-block mt-1"><i class="fas fa-image"></i> รูป</a>` : '';
-                tbody.innerHTML += `<tr class="border-b text-xs hover:bg-red-50 transition">
-                    <td class="py-3.5 px-4 text-gray-500 whitespace-nowrap align-top">${formatDateCustom(i.Timestamp)}</td>
-                    <td class="py-3.5 px-4 font-black text-gray-800 align-top">${i.Machine_ID} <div class="mt-1">${dupLabel}</div></td>
-                    <td class="py-3.5 px-4 text-red-600 font-medium align-top pr-4">${i.Issue} <div>${imgLink}</div></td>
-                    <td class="py-3.5 px-4 text-right whitespace-nowrap align-top">
-                        <button onclick="openRepairModal('${i.Machine_ID}', '${i.Issue}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition inline-flex items-center"><i class="fas fa-tools mr-1"></i> รับซ่อม</button>
-                        <button onclick="quickCloseJob('${i.Machine_ID}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition ml-1 inline-flex items-center" title="ปิดงานด่วน(เครื่องปกติ)"><i class="fas fa-check-double mr-1"></i> ปิดด่วน</button>
-                    </td></tr>`;
-            }
+                    let imgLink = latestH.Issue_Image_URL && latestH.Issue_Image_URL.length > 5 && latestH.Issue_Image_URL !== "-" ? `<a href="${latestH.Issue_Image_URL}" target="_blank" class="text-blue-600 bg-blue-50 px-2 py-1 rounded ml-1 shadow-sm border border-blue-100 inline-block mt-1"><i class="fas fa-image"></i> รูป</a>` : '';
+
+                    if (m.Status.includes("🔴")) {
+                        // งานเข้าใหม่
+                        tbodyNew.innerHTML += `<tr class="border-b text-xs hover:bg-red-50 transition">
+                            <td class="py-3 px-4 text-gray-500 align-middle">${formatDateCustom(latestH.Timestamp)}</td>
+                            <td class="py-3 px-4 font-black text-gray-800 align-middle">${m.Machine_ID}</td>
+                            <td class="py-3 px-4 text-red-600 font-medium align-middle">${latestH.Issue} <div>${imgLink}</div></td>
+                            <td class="py-3 px-4 text-center align-middle">
+                                <button onclick="openRepairModal('${m.Machine_ID}', '${latestH.Issue}', 'new')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition inline-flex items-center"><i class="fas fa-tools mr-1"></i> รับซ่อม</button>
+                                <button onclick="quickCloseJob('${m.Machine_ID}')" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1.5 rounded-lg font-bold shadow-sm transition ml-1 inline-flex items-center" title="ปิดงานด่วน"><i class="fas fa-check-double"></i></button>
+                            </td></tr>`;
+                        newCount++;
+                    } else {
+                        // งานกำลังดำเนินการ
+                        tbodyOngoing.innerHTML += `<tr class="border-b text-xs hover:bg-yellow-50 transition">
+                            <td class="py-3 px-4 text-gray-500 align-middle">${formatDateCustom(m.Last_Update)}</td>
+                            <td class="py-3 px-4 font-black text-gray-800 align-middle">${m.Machine_ID}</td>
+                            <td class="py-3 px-4 text-yellow-700 font-medium align-middle"><i class="fas fa-wrench mr-1"></i> ${latestH.Action_Taken || latestH.Issue}</td>
+                            <td class="py-3 px-4 text-center align-middle">
+                                <button onclick="openRepairModal('${m.Machine_ID}', '${latestH.Issue}', 'ongoing')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition inline-flex items-center"><i class="fas fa-edit mr-1"></i> อัปเดต/ปิดงาน</button>
+                            </td></tr>`;
+                        ongoingCount++;
+                    }
+                }
+            });
+
+            document.getElementById('badge-new-jobs').innerText = `${newCount} งาน`;
+            document.getElementById('badge-ongoing-jobs').innerText = `${ongoingCount} งาน`;
+            
+            // อัปเดต Badge ที่เมนู Sidebar
+            const navBadge = document.getElementById('nav-pending-badge');
+            if (newCount + ongoingCount > 0) { navBadge.classList.remove('hidden'); navBadge.innerText = newCount + ongoingCount; } 
+            else { navBadge.classList.add('hidden'); }
+
+            if(newCount === 0) tbodyNew.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">✨ ไม่มีงานแจ้งซ่อมเข้าใหม่</td></tr>`;
+            if(ongoingCount === 0) tbodyOngoing.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">✅ ไม่มีงานที่ค้างดำเนินการ</td></tr>`;
         }
 
-        function openRepairModal(id, issue) {
+        function openRepairModal(id, issue, type) {
             document.getElementById('repair-mac-id').innerText = id; document.getElementById('repair-issue-text').innerText = issue;
             document.getElementById('rep-machine-id').value = id; document.getElementById('rep-issue').value = issue;
             document.getElementById('rep-action').value = ""; document.getElementById('rep-parts').value = ""; document.getElementById('rep-downtime').value = 0;
@@ -727,25 +764,25 @@
         async function submitRepairForm(e) {
             e.preventDefault();
             const payload = { action: "update", currentUser: currentUserRole, Machine_ID: document.getElementById('rep-machine-id').value, Status: document.getElementById('rep-status').value, Issue: document.getElementById('rep-issue').value, Action_Taken: document.getElementById('rep-action').value, Parts_Replaced: document.getElementById('rep-parts').value, Technician: currentUserRole, Downtime_Hours: document.getElementById('rep-downtime').value || 0 };
-            showLoading("บันทึกเข้าระบบ..."); 
+            closeRepairModal(); 
+            showSaveToast("กำลังบันทึกข้อมูล..."); 
             try { 
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-                closeRepairModal(); 
-                showAlert("สำเร็จ", "อัปเดตงานซ่อมเรียบร้อย");
+                hideSaveToast("อัปเดตงานซ่อมเรียบร้อย");
                 fetchData(); 
-            } catch(e) { showError("ล้มเหลวในการเชื่อมต่อ"); hideLoading(); }
+            } catch(e) { hideSaveToast(); showError("บันทึกไม่สำเร็จ"); }
         }
         
         async function quickCloseJob(id) {
-            const result = await Swal.fire({ title: 'ปิดงานด่วน?', text: `ยืนยันว่าเครื่อง ${id} ตรวจสอบแล้วปกติ? (สถานะ: พร้อมใช้งาน)`, icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', cancelButtonColor: '#cbd5e1', confirmButtonText: 'ใช่, ปิดงานเลย', cancelButtonText: 'ยกเลิก' });
+            const result = await Swal.fire({ title: 'ปิดงานด่วน?', text: `ยืนยันว่าเครื่อง ${id} ตรวจสอบแล้วปกติ? (สถานะ: พร้อมใช้งาน)`, icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', cancelButtonColor: '#cbd5e1', confirmButtonText: 'ใช่, ปิดเลย', cancelButtonText: 'ยกเลิก' });
             if (!result.isConfirmed) return;
             
-            showLoading("กำลังปิดงาน..."); 
+            showSaveToast("กำลังบันทึกปิดงาน..."); 
             try { 
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "quick_close", Machine_ID: id, currentUser: currentUserRole}) }); 
-                showAlert("ปิดงานสำเร็จ", "อัปเดตสถานะเป็นพร้อมใช้งานแล้ว");
+                hideSaveToast("ปิดงานสำเร็จ เครื่องพร้อมใช้งาน");
                 fetchData(); 
-            } catch(e) { showError("ล้มเหลว"); hideLoading(); }
+            } catch(e) { hideSaveToast(); showError("ล้มเหลว"); }
         }
 
         // ================= 7. PUBLIC REQUEST FORMS =================
@@ -753,21 +790,23 @@
         
         async function submitReportIssue(e) {
             e.preventDefault(); const payload = { action: "report_issue", currentUser: liffProfileName, Machine_ID: document.getElementById('req-machine').value, Issue: document.getElementById('req-issue').value, Technician: document.getElementById('req-reporter').value, Issue_Image: document.getElementById('req-img-base64').value };
-            showLoading("กำลังส่งใบแจ้งซ่อม..."); 
+            switchView('overview'); // เปลี่ยนหน้ากลับไปที่แดชบอร์ดเลย
+            showSaveToast("กำลังส่งใบแจ้งซ่อมเบื้องหลัง..."); 
             try { 
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-                showAlert("ส่งเรื่องสำเร็จ!", "ข้อมูลถูกส่งถึงทีม MT เรียบร้อยแล้ว");
-                document.getElementById('req-form').reset(); document.getElementById('req-img-base64').value=""; fetchData(); switchView('overview'); 
-            } catch(err) { showError("ไม่สามารถส่งข้อมูลได้"); hideLoading(); }
+                hideSaveToast("ส่งเรื่องแจ้งซ่อมถึงทีม MT เรียบร้อย!");
+                document.getElementById('req-form').reset(); document.getElementById('req-img-base64').value=""; fetchData(); 
+            } catch(err) { hideSaveToast(); showError("ไม่สามารถส่งข้อมูลได้"); }
         }
         async function submitRelocate(e) {
             e.preventDefault(); const payload = { action: "relocate", currentUser: liffProfileName, Machine_ID: document.getElementById('rel-machine').value, Location: document.getElementById('rel-loc').value, Technician: document.getElementById('rel-reporter').value };
-            showLoading("กำลังอัปเดตพิกัด..."); 
+            switchView('overview');
+            showSaveToast("กำลังบันทึกพิกัดใหม่..."); 
             try { 
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-                showAlert("บันทึกสำเร็จ", "ย้ายพิกัดเครื่องจักรในระบบแล้ว");
-                document.getElementById('rel-form').reset(); fetchData(); switchView('overview'); 
-            } catch(err) { showError("เกิดข้อผิดพลาด"); hideLoading(); }
+                hideSaveToast("บันทึกพิกัดสถานที่ใหม่เรียบร้อย");
+                document.getElementById('rel-form').reset(); fetchData(); 
+            } catch(err) { hideSaveToast(); showError("เกิดข้อผิดพลาด"); }
         }
 
         // ================= 8. ANALYTICS & ADVANCED REPORT =================
@@ -805,8 +844,7 @@
         function openProfileModal(id) {
             const m = globalData.machines.find(x => x.Machine_ID === id); if(!m) return;
             document.getElementById('prof-id').innerText = m.Machine_ID; document.getElementById('prof-name').innerText = m.Name; document.getElementById('prof-loc').innerText = m.Location; document.getElementById('prof-brand').innerText = m.Brand!=="-"?m.Brand:"ไม่ระบุ"; document.getElementById('prof-sn').innerText = m.Serial_No!=="-"?m.Serial_No:"ไม่ระบุ"; document.getElementById('prof-warranty').innerText = m.Warranty_Exp!=="-"?formatDateCustom(m.Warranty_Exp):"ไม่ระบุ"; document.getElementById('prof-vendor').innerText = m.Vendor_Contact!=="-"?m.Vendor_Contact:"ไม่ระบุ";
-            let imgSrc = m.Image_URL && m.Image_URL.length > 5 ? m.Image_URL : fallbackImg;
-            document.getElementById('prof-img').src = imgSrc;
+            let imgSrc = m.Image_URL && m.Image_URL.length > 5 ? m.Image_URL : fallbackImg; document.getElementById('prof-img').src = imgSrc;
             
             let docHtml = m.Document_URL && m.Document_URL.length > 5 ? `<a href="${m.Document_URL}" target="_blank" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2.5 rounded-lg font-bold text-xs shadow-sm block text-center border border-red-200 transition"><i class="fas fa-file-pdf mr-2"></i> เปิดดูเอกสารคู่มือ (PDF)</a>` : `<p class="text-xs text-gray-400 italic text-center">ไม่มีเอกสารแนบ</p>`;
             document.getElementById('prof-doc-container').innerHTML = docHtml;
@@ -833,12 +871,12 @@
         }
         async function saveSettings() {
             const payload = { action: "save_settings", currentUser: currentUserRole, System_Name: document.getElementById('set-sysname').value, Date_Format: document.getElementById('set-dateformat').value, Line_Token: document.getElementById('set-linetoken').value };
-            showLoading("บันทึก..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); showAlert("สำเร็จ", "อัปเดตระบบเรียบร้อย"); fetchData(); } catch(e) { showError("บันทึกไม่สำเร็จ"); hideLoading(); }
+            showSaveToast("กำลังบันทึกการตั้งค่า..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); hideSaveToast("อัปเดตระบบเรียบร้อย"); fetchData(); } catch(e) { hideSaveToast(); showError("บันทึกไม่สำเร็จ"); }
         }
-        async function addUser() { const n=document.getElementById('add-usr-name').value; const p=document.getElementById('add-usr-pin').value; const r=document.getElementById('add-usr-role').value; if(!n||!p) return; showLoading("เพิ่มผู้ใช้..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "add_user", currentUser: currentUserRole, Name: n, PIN: p, Role: r}) }); showAlert("สำเร็จ", "เพิ่มรายชื่อใหม่แล้ว"); fetchData(); } catch(e){} document.getElementById('add-usr-name').value=""; document.getElementById('add-usr-pin').value=""; }
-        async function deleteUser(n) { const r = await Swal.fire({ title: 'ลบผู้ใช้?', text: `ลบผู้ใช้งาน ${n}?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบ', cancelButtonText: 'ยกเลิก' }); if(!r.isConfirmed) return; showLoading("ลบ..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "delete_user", currentUser: currentUserRole, Name: n}) }); fetchData(); } catch(e){} }
-        async function addLocation() { const n=document.getElementById('add-loc-name').value; if(!n) return; showLoading("เพิ่มโซน..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "add_loc", currentUser: currentUserRole, Loc_Name: n}) }); showAlert("สำเร็จ", "เพิ่มโซนใหม่แล้ว"); document.getElementById('add-loc-name').value=""; fetchData(); } catch(e){} }
-        async function deleteLoc(n) { const r = await Swal.fire({ title: 'ลบสถานที่?', text: `ต้องการลบโซน ${n}?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบ', cancelButtonText: 'ยกเลิก' }); if(!r.isConfirmed) return; showLoading("ลบ..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "delete_loc", currentUser: currentUserRole, Loc_Name: n}) }); fetchData(); } catch(e){} }
+        async function addUser() { const n=document.getElementById('add-usr-name').value; const p=document.getElementById('add-usr-pin').value; const r=document.getElementById('add-usr-role').value; if(!n||!p) return; showSaveToast("เพิ่มผู้ใช้..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "add_user", currentUser: currentUserRole, Name: n, PIN: p, Role: r}) }); hideSaveToast("เพิ่มผู้ใช้งานใหม่แล้ว"); fetchData(); } catch(e){} document.getElementById('add-usr-name').value=""; document.getElementById('add-usr-pin').value=""; }
+        async function deleteUser(n) { const r = await Swal.fire({ title: 'ลบผู้ใช้?', text: `ลบผู้ใช้งาน ${n}?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบ', cancelButtonText: 'ยกเลิก' }); if(!r.isConfirmed) return; showSaveToast("ลบ..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "delete_user", currentUser: currentUserRole, Name: n}) }); hideSaveToast(); fetchData(); } catch(e){} }
+        async function addLocation() { const n=document.getElementById('add-loc-name').value; if(!n) return; showSaveToast("เพิ่มโซน..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "add_loc", currentUser: currentUserRole, Loc_Name: n}) }); hideSaveToast("เพิ่มโซนใหม่แล้ว"); document.getElementById('add-loc-name').value=""; fetchData(); } catch(e){} }
+        async function deleteLoc(n) { const r = await Swal.fire({ title: 'ลบสถานที่?', text: `ต้องการลบโซน ${n}?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบ', cancelButtonText: 'ยกเลิก' }); if(!r.isConfirmed) return; showSaveToast("ลบ..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "delete_loc", currentUser: currentUserRole, Loc_Name: n}) }); hideSaveToast(); fetchData(); } catch(e){} }
 
         // ================= 11. Scanner & Print QR =================
         function checkUrlParams() {
@@ -856,7 +894,7 @@
         
         function printSelectedQR() {
             const checkedBoxes = document.querySelectorAll('.qr-checkbox:checked'); 
-            if(checkedBoxes.length === 0) { showError("กรุณาติ๊กเลือกเครื่องที่ต้องการพิมพ์หน้าตารางก่อนครับ"); return; }
+            if(checkedBoxes.length === 0) { showError("กรุณาติ๊กเลือกเครื่องที่ต้องการพิมพ์ในมุมมองตารางก่อนครับ"); return; }
             const printArea = document.getElementById('print-area'); printArea.innerHTML = "";
             checkedBoxes.forEach(cb => { const m = globalData.machines.find(x => x.Machine_ID === cb.value); if(m) { const url = `${window.location.href.split('?')[0]}?scan=${m.Machine_ID}`; printArea.innerHTML += `<div class="label-box"><h2 style="font-weight:bold;">${sysSettings.name}</h2><h1 style="font-size:28px;font-weight:900;margin:5px 0;">${m.Machine_ID}</h1><p style="font-size:12px;">${m.Name}</p><img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}" style="width:140px;height:140px;margin:10px auto;"><p style="font-size:12px;">📍 ${m.Location}</p></div>`; } });
             setTimeout(() => window.print(), 800);
