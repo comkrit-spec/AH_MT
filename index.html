@@ -4,89 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบศูนย์ควบคุมซ่อมบำรุง (Smart CMMS)</title>
+    <!-- โหลดไลบรารีที่จำเป็น -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
-        
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
+        /* ตั้งค่าหน้า Print สำหรับสติกเกอร์ */
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
             #print-area { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: flex-start; padding-top: 20px; }
             .label-box { border: 2px solid #000; padding: 20px; text-align: center; width: 300px; border-radius: 10px; page-break-inside: avoid; }
         }
+        /* พื้นหลังแผนผัง */
         .floor-plan-bg { background-image: linear-gradient(#e5e7eb 2px, transparent 2px), linear-gradient(90deg, #e5e7eb 2px, transparent 2px); background-size: 40px 40px; background-color: #f9fafb; }
         .ping-alert { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        .img-cover { object-fit: cover; width: 100%; height: 100%; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
 
     <!-- ================= Sidebar ================= -->
-    <aside class="w-64 bg-slate-900 text-white shadow-xl flex flex-col hidden md:flex h-full z-20 transition-all">
+    <aside class="w-64 bg-slate-900 text-white shadow-xl flex flex-col hidden md:flex h-full z-20">
         <div class="h-20 flex items-center justify-center border-b border-slate-700 bg-slate-950">
             <h1 class="text-2xl font-bold text-blue-400 tracking-wider"><i class="fas fa-industry mr-2"></i>M-MAINTAIN</h1>
         </div>
         <nav class="p-4 space-y-2 flex-1 overflow-y-auto">
             <p class="text-xs text-slate-400 font-semibold mb-2 uppercase tracking-wider">Main Menu</p>
             <button onclick="switchView('overview')" id="menu-overview" class="w-full text-left block px-4 py-3 bg-blue-600 text-white rounded-lg shadow font-medium transition">
-                <i class="fas fa-chart-pie mr-3 w-5"></i> ภาพรวม
+                <i class="fas fa-chart-pie mr-3 w-5"></i> ภาพรวมเครื่องจักร
+            </button>
+            <button onclick="switchView('inventory')" id="menu-inventory" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+                <i class="fas fa-boxes mr-3 w-5"></i> คลังอะไหล่ (Stock)
             </button>
             <button onclick="switchView('update')" id="menu-update" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
-                <i class="fas fa-tools mr-3 w-5"></i> แจ้งซ่อม / อัปเดต
+                <i class="fas fa-tools mr-3 w-5"></i> แจ้งซ่อม / เบิกอะไหล่
             </button>
             <button onclick="switchView('report')" id="menu-report" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
                 <i class="fas fa-file-alt mr-3 w-5"></i> Report รายงาน
             </button>
-            
-            <p class="text-xs text-slate-400 font-semibold mb-2 mt-6 uppercase tracking-wider">System</p>
-            <button onclick="switchView('settings')" id="menu-settings" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
-                <i class="fas fa-cog mr-3 w-5"></i> การตั้งค่า
-            </button>
         </nav>
         <div class="p-4 border-t border-slate-700 bg-slate-950">
-            <button class="w-full border border-red-500/50 text-red-400 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors flex justify-center items-center">
-                <i class="fas fa-sign-out-alt mr-2"></i> Logout
-            </button>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-slate-700 flex justify-center items-center text-blue-300"><i class="fas fa-user-cog"></i></div>
+                <div><p class="text-xs text-slate-400">ผู้ใช้งาน</p><p class="text-sm font-semibold">ทีมซ่อมบำรุง</p></div>
+            </div>
         </div>
     </aside>
 
     <!-- ================= Main Content ================= -->
     <main class="flex-1 flex flex-col h-full relative w-full overflow-hidden">
         
+        <!-- Header มือถือ -->
         <header class="md:hidden bg-slate-900 text-white shadow p-4 flex justify-between items-center z-20">
             <h1 class="text-xl font-bold text-blue-400 tracking-wider">M-MAINTAIN</h1>
-            <div class="flex gap-3">
-                <button onclick="switchView('overview')" class="text-slate-300"><i class="fas fa-chart-pie text-lg"></i></button>
-                <button onclick="switchView('update')" class="text-slate-300"><i class="fas fa-tools text-lg"></i></button>
-                <button onclick="switchView('report')" class="text-slate-300"><i class="fas fa-file-alt text-lg"></i></button>
-                <button onclick="switchView('settings')" class="text-slate-300"><i class="fas fa-cog text-lg"></i></button>
+            <div class="flex gap-4">
+                <button onclick="switchView('overview')"><i class="fas fa-chart-pie text-lg"></i></button>
+                <button onclick="switchView('inventory')"><i class="fas fa-boxes text-lg"></i></button>
+                <button onclick="switchView('update')"><i class="fas fa-tools text-lg"></i></button>
             </div>
         </header>
 
         <div class="p-4 md:p-6 overflow-y-auto flex-1 w-full bg-gray-50 relative">
             <div id="loading" class="absolute inset-0 bg-gray-100/80 flex flex-col items-center justify-center z-30 hidden backdrop-blur-sm">
-                <div class="loader mb-4"></div>
-                <p class="text-gray-600 font-medium" id="loading-text">กำลังประมวลผล...</p>
+                <div class="loader mb-4"></div><p class="text-gray-600 font-medium" id="loading-text">กำลังประมวลผล...</p>
             </div>
 
-            <!-- ================= VIEW: ภาพรวม ================= -->
+            <!-- ================= VIEW: ภาพรวมเครื่องจักร (Overview) ================= -->
             <div id="view-overview" class="view-section">
-                <!-- เนื้อหา Dashboard เหมือนเดิม -->
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-800">สถานะเครื่องจักร (ภาพรวม)</h2>
-                        <p class="text-sm text-gray-500">ข้อมูลสถานะเครื่องจักรและโรงงานแบบเรียลไทม์</p>
+                        <h2 class="text-2xl font-bold text-gray-800">ศูนย์ควบคุม (Command Center)</h2>
+                        <p class="text-sm text-gray-500">ข้อมูลสถานะเครื่องจักรแบบเรียลไทม์</p>
                     </div>
-                    <button onclick="fetchData()" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow-sm flex items-center transition text-sm font-medium">
+                    <button onclick="fetchData()" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow-sm flex items-center transition">
                         <i class="fas fa-sync-alt mr-2 text-blue-500"></i> โหลดข้อมูลใหม่
                     </button>
                 </div>
+                
+                <!-- Dashboard -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center">
                         <div class="rounded-full bg-blue-100 p-3 mr-4"><i class="fas fa-cogs text-blue-600 text-xl"></i></div>
@@ -100,37 +101,41 @@
                         <div class="rounded-full bg-red-100 p-3 mr-4"><i class="fas fa-exclamation-triangle text-red-600 text-xl"></i></div>
                         <div><p class="text-xs text-gray-500 font-semibold">แจ้งซ่อม</p><h3 class="text-2xl font-bold text-red-600" id="stat-broken">-</h3></div>
                     </div>
-                    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 flex justify-center items-center h-24">
-                        <canvas id="statusChart" class="w-full h-full"></canvas>
-                    </div>
+                    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 h-24 flex items-center justify-center"><canvas id="statusChart"></canvas></div>
                 </div>
+
+                <!-- มุมมอง -->
                 <div class="flex mb-4 bg-white rounded-lg p-1 shadow-sm inline-flex border border-gray-200">
-                    <button onclick="toggleDisplayMode('grid')" id="btn-grid" class="px-4 py-1.5 rounded-md text-sm font-medium bg-blue-100 text-blue-700 transition">
-                        <i class="fas fa-th-large mr-1"></i> แบบการ์ด
-                    </button>
-                    <button onclick="toggleDisplayMode('map')" id="btn-map" class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition">
-                        <i class="fas fa-map mr-1"></i> แผนผัง 2D
-                    </button>
+                    <button onclick="toggleDisplayMode('grid')" id="btn-grid" class="px-4 py-1.5 rounded-md text-sm font-medium bg-blue-100 text-blue-700 transition"><i class="fas fa-th-large mr-1"></i> แบบการ์ด</button>
+                    <button onclick="toggleDisplayMode('map')" id="btn-map" class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition"><i class="fas fa-map mr-1"></i> แผนผัง 2D</button>
                 </div>
-                <div id="skeleton-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-                <div id="machine-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden"></div>
+
+                <!-- พื้นที่แสดงข้อมูล -->
+                <div id="machine-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
                 <div id="machine-map" class="hidden relative w-full h-[500px] border-2 border-gray-300 rounded-xl overflow-hidden floor-plan-bg shadow-inner">
-                    <div class="absolute top-4 left-4 bg-white/80 p-2 rounded shadow-sm text-xs font-bold border border-gray-200 backdrop-blur z-10">
-                        <i class="fas fa-info-circle text-blue-500 mr-1"></i> แผนผังจำลอง
-                    </div>
+                    <div class="absolute top-4 left-4 bg-white/80 p-2 rounded shadow-sm text-xs font-bold border border-gray-200 backdrop-blur z-10"><i class="fas fa-info-circle text-blue-500 mr-1"></i> แผนผังโรงงาน</div>
                     <div id="map-container" class="relative w-full h-full"></div>
                 </div>
             </div>
 
-            <!-- ================= VIEW: แจ้งซ่อม ================= -->
+            <!-- ================= VIEW: คลังอะไหล่ (Inventory) ================= -->
+            <div id="view-inventory" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-boxes text-blue-600 mr-2"></i>คลังอะไหล่ (Spare Parts)</h2>
+                    <p class="text-sm text-gray-500">จัดการสต๊อกและแจ้งเตือนจุดสั่งซื้อขั้นต่ำ</p>
+                </div>
+                <div id="inventory-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    <!-- Cards injected via JS -->
+                </div>
+            </div>
+
+            <!-- ================= VIEW: แจ้งซ่อม & เบิกอะไหล่ ================= -->
             <div id="view-update" class="view-section hidden max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-100">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2"><i class="fas fa-clipboard-list text-blue-500 mr-2"></i>อัปเดตสถานะ / แจ้งซ่อม</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2"><i class="fas fa-tools text-blue-500 mr-2"></i>แจ้งซ่อม & เบิกอะไหล่</h2>
                 <form id="update-form" onsubmit="submitUpdate(event)" class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">รหัสเครื่องจักร <span class="text-red-500">*</span></label>
-                        <select id="form-machine-id" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 bg-gray-50 font-medium">
-                            <option value="">-- กรุณารอโหลดข้อมูล --</option>
-                        </select>
+                        <select id="form-machine-id" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50"></select>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">อัปเดตสถานะ <span class="text-red-500">*</span></label>
@@ -142,25 +147,36 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">อาการที่พบ (ถ้ามี)</label>
-                        <textarea id="form-issue" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="form-issue" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2"></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">การแก้ไขเบื้องต้น</label>
-                        <input type="text" id="form-action" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="form-action" class="w-full border border-gray-300 rounded-lg px-4 py-2.5">
                     </div>
+                    
+                    <!-- ส่วนเบิกอะไหล่ -->
+                    <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                        <p class="font-bold text-gray-700 mb-2"><i class="fas fa-box-open mr-2 text-blue-500"></i>ทำรายการเบิกอะไหล่ (ถ้ามี)</p>
+                        <div class="flex gap-2">
+                            <select id="form-part-id" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">-- ไม่ได้ใช้อะไหล่ --</option></select>
+                            <input type="number" id="form-part-qty" min="1" placeholder="จำนวน" class="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">* ระบบจะทำการตัดสต๊อกอะไหล่อัตโนมัติเมื่อกดบันทึก</p>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อผู้ทำรายการ <span class="text-red-500">*</span></label>
-                        <input type="text" id="form-tech" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="form-tech" required placeholder="ระบุชื่อช่างผู้รับผิดชอบ" class="w-full border border-gray-300 rounded-lg px-4 py-2.5">
                     </div>
                     <div class="pt-4">
-                        <button type="submit" id="btn-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition text-lg">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition text-lg">
                             <i class="fas fa-save mr-2"></i> บันทึกข้อมูล
                         </button>
                     </div>
                 </form>
             </div>
 
-            <!-- ================= VIEW: รายงาน (Report) ================= -->
+            <!-- ================= VIEW: Report ================= -->
             <div id="view-report" class="view-section hidden bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-file-excel text-green-600 mr-2"></i>รายงานประวัติการซ่อมบำรุง</h2>
@@ -172,77 +188,43 @@
                     <table class="w-full text-left border-collapse min-w-max">
                         <thead class="bg-gray-100">
                             <tr>
-                                <th class="py-3 px-4 text-sm font-semibold text-gray-700 border-b">วัน-เวลา</th>
-                                <th class="py-3 px-4 text-sm font-semibold text-gray-700 border-b">รหัสเครื่อง</th>
-                                <th class="py-3 px-4 text-sm font-semibold text-gray-700 border-b">อาการ</th>
-                                <th class="py-3 px-4 text-sm font-semibold text-gray-700 border-b">การแก้ไข</th>
-                                <th class="py-3 px-4 text-sm font-semibold text-gray-700 border-b">ช่างเทคนิค</th>
+                                <th class="py-3 px-4 text-sm font-semibold border-b">วัน-เวลา</th>
+                                <th class="py-3 px-4 text-sm font-semibold border-b">รหัสเครื่อง</th>
+                                <th class="py-3 px-4 text-sm font-semibold border-b">อาการ</th>
+                                <th class="py-3 px-4 text-sm font-semibold border-b">การแก้ไข / เบิกอะไหล่</th>
+                                <th class="py-3 px-4 text-sm font-semibold border-b">ผู้รับผิดชอบ</th>
                             </tr>
                         </thead>
-                        <tbody id="report-table-body">
-                            <!-- Data injected via JS -->
-                        </tbody>
+                        <tbody id="report-table-body"></tbody>
                     </table>
-                </div>
-            </div>
-
-            <!-- ================= VIEW: การตั้งค่า (Settings) ================= -->
-            <div id="view-settings" class="view-section hidden max-w-3xl mx-auto space-y-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4"><i class="fas fa-cogs text-gray-600 mr-2"></i>การตั้งค่าระบบ (Settings)</h2>
-                
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">ข้อมูลผู้ใช้งาน</h3>
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl"><i class="fas fa-user-tie"></i></div>
-                        <div>
-                            <p class="font-bold text-xl">นายสมชาย ช่างยนต์</p>
-                            <p class="text-sm text-gray-500">ตำแหน่ง: หัวหน้าช่างซ่อมบำรุง (Admin)</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">การแจ้งเตือน (LINE Notify)</h3>
-                    <p class="text-sm text-gray-500 mb-4">ตั้งค่า Token เพื่อให้ระบบส่งข้อความเข้ากลุ่ม LINE เวลามีการแจ้งซ่อม</p>
-                    <div class="flex gap-2">
-                        <input type="password" value="************************" disabled class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50">
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">แก้ไข</button>
-                    </div>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <!-- ================= Modal: แสดงข้อมูลหลังสแกน QR Code (โชว์พิกัด) ================= -->
+    <!-- ================= Modal: Scan QR Code Result ================= -->
     <div id="scan-modal" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden transform transition-all scale-100">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
             <div class="bg-blue-600 p-4 flex justify-between items-center text-white">
                 <h3 class="text-lg font-bold"><i class="fas fa-qrcode mr-2"></i> ข้อมูลจากการสแกน</h3>
-                <button onclick="closeScanModal()" class="text-white/80 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+                <button onclick="closeScanModal()" class="hover:text-gray-200"><i class="fas fa-times text-xl"></i></button>
             </div>
             <div class="p-6 text-center">
                 <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
                     <i class="fas fa-microchip text-4xl text-gray-500"></i>
                 </div>
-                <h2 class="text-3xl font-black text-gray-800 mb-1" id="scan-res-id">M-001</h2>
-                <p class="text-md text-gray-600 font-medium mb-4" id="scan-res-name">ชื่อเครื่องจักร</p>
+                <h2 class="text-3xl font-black text-gray-800 mb-1" id="scan-res-id">-</h2>
+                <p class="text-md text-gray-600 font-medium mb-4" id="scan-res-name">-</p>
                 
-                <!-- พิกัดและสถานะแบบเด่นชัด -->
                 <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200 text-left space-y-3">
                     <div class="flex items-start">
                         <div class="w-8 flex justify-center"><i class="fas fa-map-marker-alt text-red-500 text-lg mt-0.5"></i></div>
-                        <div>
-                            <p class="text-xs text-gray-500">สถานที่ / พิกัดตั้งเครื่อง</p>
-                            <p class="font-bold text-gray-800 text-lg" id="scan-res-loc">โซน A</p>
-                        </div>
+                        <div><p class="text-xs text-gray-500">สถานที่</p><p class="font-bold text-gray-800 text-lg" id="scan-res-loc">-</p></div>
                     </div>
                     <div class="flex items-start">
-                        <div class="w-8 flex justify-center" id="scan-res-icon"><i class="fas fa-check-circle text-green-500 text-lg mt-0.5"></i></div>
-                        <div>
-                            <p class="text-xs text-gray-500">สถานะปัจจุบัน</p>
-                            <p class="font-bold text-gray-800 text-lg" id="scan-res-status">🟢 พร้อมใช้งาน</p>
-                        </div>
+                        <div class="w-8 flex justify-center" id="scan-res-icon"></div>
+                        <div><p class="text-xs text-gray-500">สถานะปัจจุบัน</p><p class="font-bold text-gray-800 text-lg" id="scan-res-status">-</p></div>
                     </div>
                 </div>
 
@@ -258,20 +240,23 @@
         </div>
     </div>
 
-    <!-- Modal ดูประวัติ (เหมือนเดิม) -->
-    <div id="history-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <!-- ================= Modal: ดูประวัติ (History) ================= -->
+    <div id="history-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <h3 class="text-lg font-bold text-gray-800" id="modal-title">ประวัติการซ่อม</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 p-2"><i class="fas fa-times text-xl"></i></button>
+            <div class="p-4 border-b flex justify-between bg-gray-50 rounded-t-xl">
+                <h3 class="text-lg font-bold" id="modal-title">ประวัติ</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div class="p-0 md:p-4 overflow-y-auto flex-1">
-                <table class="w-full text-left border-collapse"><tbody id="modal-body"></tbody></table>
+            <div class="p-4 overflow-y-auto flex-1">
+                <table class="w-full text-left border-collapse">
+                    <thead><tr class="border-b"><th class="pb-2 text-sm text-gray-600">วันที่</th><th class="pb-2 text-sm text-gray-600">อาการ</th><th class="pb-2 text-sm text-gray-600">แก้ไข</th></tr></thead>
+                    <tbody id="modal-body"></tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <!-- Print Area -->
+    
+    <!-- ================= Print Area ================= -->
     <div id="print-area" class="hidden">
         <div class="label-box">
             <h2 class="text-xl font-bold mb-1">M-MAINTAIN</h2>
@@ -283,232 +268,130 @@
         </div>
     </div>
 
+    <!-- ================= JavaScript ================= -->
     <script>
-        const GAS_URL = "ใส่_URL_ของ_GAS_ที่นี่"; 
-        let globalHistory = [];
-        let globalMachines = [];
+        // ⚠️ ใส่ URL ของ GAS ที่ Deploy แล้ว
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzcddOWRlv2i3ipwz9RRWEWHAgP7sDWq6Srk8azvuBN2A3f9Rv-GASodgcaeJsa1rtcVw/exec"; 
+        
+        let globalData = { machines: [], history: [], inventory: [] };
         let chartInstance = null;
         let currentScannedId = "";
 
+        // Navigation
         function switchView(viewName) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
-            
-            document.querySelectorAll('aside nav button').forEach(el => {
-                el.className = "w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition";
-            });
-            const activeBtn = document.getElementById(`menu-${viewName}`);
-            if(activeBtn) activeBtn.className = "w-full text-left block px-4 py-3 bg-blue-600 text-white rounded-lg shadow font-medium transition";
+            document.querySelectorAll('aside nav button').forEach(el => el.className = "w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition");
+            const btn = document.getElementById(`menu-${viewName}`);
+            if(btn) btn.className = "w-full text-left block px-4 py-3 bg-blue-600 text-white rounded-lg shadow font-medium transition";
         }
 
+        // Fetch Data
         async function fetchData() {
-            // โค้ดดึงข้อมูลเหมือนเดิม
             document.getElementById('loading').classList.remove('hidden');
             try {
-                if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") {
-                    setTimeout(() => processData(getMockData()), 500); 
-                    return;
-                }
+                if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") { setTimeout(() => processData(getMockData()), 800); return; }
                 const res = await fetch(GAS_URL);
                 const data = await res.json();
                 if (data.status === "success") processData(data);
-            } catch (error) {
-                alert("เชื่อมต่อฐานข้อมูลล้มเหลว");
-            } finally {
-                document.getElementById('loading').classList.add('hidden');
-            }
+            } catch (error) { alert("เชื่อมต่อฐานข้อมูลล้มเหลว"); } 
+            finally { document.getElementById('loading').classList.add('hidden'); }
         }
 
         function processData(data) {
-            globalMachines = data.machines;
-            globalHistory = data.history;
-            renderCards(globalMachines);
-            renderMap(globalMachines);
-            populateDropdown(globalMachines);
-            updateDashboardStats(globalMachines);
-            renderReportTable(globalHistory);
+            globalData = data;
+            renderMachines(data.machines);
+            renderInventory(data.inventory);
+            populateDropdowns(data.machines, data.inventory);
+            updateDashboard(data.machines);
+            renderMap(data.machines);
+            renderReport(data.history);
             checkUrlParams(); 
         }
 
-        // ================= ระบบสแกน QR โฉมใหม่ =================
-        function checkUrlParams() {
-            const scanId = new URLSearchParams(window.location.search).get('scan');
-            if (scanId) {
-                const machine = globalMachines.find(m => m.Machine_ID === scanId);
-                if (machine) {
-                    currentScannedId = scanId;
-                    showScanResultModal(machine);
-                } else {
-                    alert("ไม่พบข้อมูลเครื่องจักรที่สแกนในระบบ");
-                }
-            }
-        }
-
-        function showScanResultModal(machine) {
-            document.getElementById('scan-res-id').innerText = machine.Machine_ID;
-            document.getElementById('scan-res-name').innerText = machine.Name;
-            document.getElementById('scan-res-loc').innerText = machine.Location || "ไม่ระบุพิกัด";
-            
-            const status = machine.Status || "";
-            document.getElementById('scan-res-status').innerText = status;
-            
-            let iconHtml = '<i class="fas fa-question-circle text-gray-500 text-lg mt-0.5"></i>';
-            if(status.includes("🟢")) iconHtml = '<i class="fas fa-check-circle text-green-500 text-lg mt-0.5"></i>';
-            if(status.includes("🟡")) iconHtml = '<i class="fas fa-exclamation-triangle text-yellow-500 text-lg mt-0.5"></i>';
-            if(status.includes("🔴")) iconHtml = '<i class="fas fa-times-circle text-red-500 text-lg mt-0.5"></i>';
-            document.getElementById('scan-res-icon').innerHTML = iconHtml;
-
-            document.getElementById('scan-modal').classList.remove('hidden');
-        }
-
-        function closeScanModal() { document.getElementById('scan-modal').classList.add('hidden'); }
-        
-        function jumpToUpdateFromScan() {
-            closeScanModal();
-            switchView('update');
-            document.getElementById('form-machine-id').value = currentScannedId;
-            document.getElementById('form-status').value = "🔴 แจ้งซ่อม / เครื่องเสีย";
-        }
-
-        function openHistoryFromScan() {
-            closeScanModal();
-            openModal(currentScannedId);
-        }
-
-        // ================= หน้า Report (สร้างตาราง) =================
-        function renderReportTable(history) {
-            const tbody = document.getElementById('report-table-body');
-            tbody.innerHTML = "";
-            if(history.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">ไม่มีข้อมูลประวัติ</td></tr>`;
-                return;
-            }
-            [...history].reverse().forEach(item => {
-                tbody.innerHTML += `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="py-3 px-4 text-sm">${item.Timestamp}</td>
-                        <td class="py-3 px-4 text-sm font-bold">${item.Machine_ID}</td>
-                        <td class="py-3 px-4 text-sm text-red-600">${item.Issue}</td>
-                        <td class="py-3 px-4 text-sm text-green-600">${item.Action_Taken}</td>
-                        <td class="py-3 px-4 text-sm">${item.Technician}</td>
-                    </tr>`;
-            });
-        }
-
-        // ฟังก์ชัน Export to CSV
-        function exportToCSV() {
-            if(globalHistory.length === 0) { alert("ไม่มีข้อมูลสำหรับดาวน์โหลด"); return; }
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // รองรับภาษาไทย
-            csvContent += "Timestamp,Machine_ID,Issue,Action_Taken,Technician\n";
-            
-            globalHistory.forEach(row => {
-                const r = [row.Timestamp, row.Machine_ID, row.Issue, row.Action_Taken, row.Technician].map(str => `"${str}"`);
-                csvContent += r.join(",") + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "maintenance_report.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // ฟังก์ชันอื่นๆ ยังคงเดิม (renderCards, ChartJS, submitUpdate ฯลฯ)
-        function getStatusDotColor(s) {
-            if (!s) return "bg-gray-400";
-            if (s.includes("🟢")) return "bg-green-500 shadow-green-300";
-            if (s.includes("🟡")) return "bg-yellow-400 shadow-yellow-200";
-            if (s.includes("🔴")) return "bg-red-500 shadow-red-300";
-            return "bg-gray-400";
-        }
-
-        function renderCards(machines) {
+        // Render Machines (Grid View)
+        function renderMachines(machines) {
             const grid = document.getElementById('machine-grid');
             grid.innerHTML = "";
-            machines.forEach(machine => {
-                const dotColor = getStatusDotColor(machine.Status);
-                const cleanStatus = machine.Status ? machine.Status.replace(/[🟢🔴🟡]/g, '').trim() : "ไม่มีข้อมูล";
+            machines.forEach(m => {
+                const dotColor = m.Status.includes("🟢") ? "bg-green-500" : (m.Status.includes("🔴") ? "bg-red-500" : "bg-yellow-400");
+                let imageHtml = `<div class="h-40 bg-slate-100 flex items-center justify-center text-slate-300"><i class="fas fa-industry text-5xl"></i></div>`;
+                if (m.Image_URL && m.Image_URL.length > 5 && m.Image_URL !== "-") {
+                    imageHtml = `<div class="h-40 bg-gray-200 overflow-hidden"><img src="${m.Image_URL}" class="img-cover hover:scale-110 transition duration-500"></div>`;
+                }
                 grid.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative group hover:shadow-lg transition">
-                        <div class="absolute top-3 right-3 z-10 flex gap-2">
-                            <button onclick="printQR('${machine.Machine_ID}', '${machine.Name}', '${machine.Location}')" class="bg-white text-gray-600 rounded-full w-8 h-8 shadow hover:bg-gray-50"><i class="fas fa-print text-sm"></i></button>
-                            <button onclick="openModal('${machine.Machine_ID}')" class="bg-white text-blue-600 rounded-full w-8 h-8 shadow hover:bg-blue-50"><i class="fas fa-history text-sm"></i></button>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative group">
+                        <div class="absolute top-2 right-2 z-10 flex gap-2">
+                            <button onclick="printQR('${m.Machine_ID}','${m.Name}','${m.Location}')" class="bg-white text-gray-700 w-8 h-8 rounded-full shadow hover:bg-gray-100"><i class="fas fa-print"></i></button>
+                            <button onclick="openHistory('${m.Machine_ID}')" class="bg-white text-blue-600 w-8 h-8 rounded-full shadow hover:bg-blue-50"><i class="fas fa-history"></i></button>
                         </div>
-                        <div class="h-28 bg-gradient-to-r from-slate-50 to-slate-100 flex items-center justify-center text-slate-300"><i class="fas fa-cogs text-3xl"></i></div>
-                        <div class="p-4">
-                            <h3 class="font-bold text-lg">${machine.Machine_ID}</h3>
-                            <p class="text-xs text-gray-500">${machine.Name}</p>
-                            <p class="text-[11px] text-gray-500 mt-2 bg-gray-50 inline-block px-2 py-1 rounded"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> ${machine.Location || '-'}</p>
-                            <div class="mt-4 pt-3 border-t border-gray-50 flex justify-between items-center">
-                                <p class="text-xs font-semibold text-gray-700 flex items-center"><span class="w-2 h-2 ${dotColor} rounded-full mr-2"></span>${cleanStatus}</p>
+                        ${imageHtml}
+                        <div class="p-4 relative">
+                            <div class="flex justify-between items-start">
+                                <div><h3 class="font-bold text-lg text-gray-800">${m.Machine_ID}</h3><p class="text-xs text-gray-500 truncate w-32">${m.Name}</p></div>
+                                <div class="w-3.5 h-3.5 rounded-full ${dotColor} border-2 border-white absolute right-4 top-4 shadow-sm"></div>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-2 bg-gray-50 inline-block px-2 py-1 rounded"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> ${m.Location || '-'}</p>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // Render Inventory
+        function renderInventory(inventory) {
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = "";
+            if(!inventory) return;
+            inventory.forEach(item => {
+                const qty = parseInt(item.Quantity) || 0;
+                const min = parseInt(item.Min_Stock) || 0;
+                const isLow = qty <= min; 
+                const badgeColor = isLow ? "bg-red-100 text-red-700 border-red-200 ping-alert-soft" : "bg-green-100 text-green-700 border-green-200";
+                let imgHtml = `<div class="h-32 bg-slate-50 flex items-center justify-center text-slate-300"><i class="fas fa-box-open text-4xl"></i></div>`;
+                if(item.Image_URL && item.Image_URL !== "-") imgHtml = `<div class="h-32 bg-white overflow-hidden p-2"><img src="${item.Image_URL}" class="img-cover rounded-lg"></div>`;
+                
+                grid.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm border ${isLow ? 'border-red-300 shadow-md' : 'border-gray-200'} overflow-hidden">
+                        ${imgHtml}
+                        <div class="p-3 border-t border-gray-100">
+                            <p class="text-[10px] text-gray-400 mb-0.5">${item.Part_ID}</p>
+                            <h4 class="font-bold text-sm text-gray-800 truncate mb-2">${item.Name}</h4>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] text-gray-500"><i class="fas fa-warehouse mr-1"></i>${item.Location}</span>
+                                <span class="text-xs font-bold px-2 py-1 rounded border ${badgeColor}">เหลือ: ${qty}</span>
                             </div>
                         </div>
                     </div>`;
             });
         }
 
-        function toggleDisplayMode(mode) {
-            if(mode === 'grid') {
-                document.getElementById('machine-grid').classList.remove('hidden');
-                document.getElementById('machine-map').classList.add('hidden');
-            } else {
-                document.getElementById('machine-map').classList.remove('hidden');
-                document.getElementById('machine-grid').classList.add('hidden');
-            }
+        // Fill Form Dropdowns
+        function populateDropdowns(machines, inventory) {
+            const mSelect = document.getElementById('form-machine-id');
+            mSelect.innerHTML = `<option value="">-- เลือกหมายเลขเครื่องจักร --</option>`;
+            machines.forEach(m => mSelect.innerHTML += `<option value="${m.Machine_ID}">${m.Machine_ID} : ${m.Name}</option>`);
+
+            const pSelect = document.getElementById('form-part-id');
+            pSelect.innerHTML = `<option value="">-- ไม่ได้ใช้อะไหล่ --</option>`;
+            if(inventory) inventory.forEach(p => pSelect.innerHTML += `<option value="${p.Part_ID}">${p.Part_ID} : ${p.Name} (เหลือ ${p.Quantity})</option>`);
         }
 
-        function renderMap(machines) {
-            const mapContainer = document.getElementById('map-container');
-            mapContainer.innerHTML = "";
-            const positions = [{x:20,y:30}, {x:50,y:25}, {x:80,y:40}, {x:30,y:70}, {x:70,y:75}, {x:10,y:80}];
-            machines.forEach((machine, i) => {
-                const pos = positions[i % positions.length];
-                const dotColor = getStatusDotColor(machine.Status).split(" ")[0];
-                const ping = machine.Status.includes("🔴") ? `<div class="absolute inset-0 rounded-full ${dotColor} ping-alert"></div>` : "";
-                mapContainer.innerHTML += `
-                    <div class="absolute cursor-pointer group" style="left:${pos.x}%; top:${pos.y}%;" onclick="openModal('${machine.Machine_ID}')">
-                        <div class="relative w-6 h-6">${ping}<div class="w-6 h-6 rounded-full ${dotColor} border-2 border-white shadow-lg relative z-10"></div></div>
-                        <div class="absolute top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 z-20 pointer-events-none text-center">
-                            <b>${machine.Machine_ID}</b><br/>${machine.Location}
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function updateDashboardStats(machines) {
-            let ready = 0, waiting = 0, broken = 0;
-            machines.forEach(m => {
-                if(m.Status.includes("🟢")) ready++; else if(m.Status.includes("🔴")) broken++; else waiting++;
-            });
-            document.getElementById('stat-total').innerText = machines.length;
-            document.getElementById('stat-ready').innerText = ready;
-            document.getElementById('stat-broken').innerText = broken;
-            
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: ['พร้อมใช้งาน','รอตรวจสอบ','แจ้งซ่อม'], datasets: [{ data: [ready, waiting, broken], backgroundColor: ['#22c55e', '#eab308', '#ef4444'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '70%' }
-            });
-        }
-
-        function populateDropdown(machines) {
-            const select = document.getElementById('form-machine-id');
-            select.innerHTML = `<option value="">-- เลือกหมายเลขเครื่องจักร --</option>`;
-            machines.forEach(m => select.innerHTML += `<option value="${m.Machine_ID}">${m.Machine_ID} : ${m.Name}</option>`);
-        }
-
+        // Update/POST logic
         async function submitUpdate(e) {
             e.preventDefault(); 
             if (GAS_URL === "ใส่_URL_ของ_GAS_ที่นี่") { alert("ใส่ GAS URL ก่อนใช้งานจริง"); return; }
+            
             const payload = {
-                action: "update", Machine_ID: document.getElementById('form-machine-id').value,
-                Status: document.getElementById('form-status').value, Issue: document.getElementById('form-issue').value,
-                Action_Taken: document.getElementById('form-action').value, Technician: document.getElementById('form-tech').value
+                action: "update", 
+                Machine_ID: document.getElementById('form-machine-id').value,
+                Status: document.getElementById('form-status').value, 
+                Issue: document.getElementById('form-issue').value,
+                Action_Taken: document.getElementById('form-action').value, 
+                Technician: document.getElementById('form-tech').value,
+                Part_ID: document.getElementById('form-part-id').value,
+                Part_Qty: document.getElementById('form-part-qty').value || 0
             };
+
             document.getElementById('loading').classList.remove('hidden');
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
@@ -520,37 +403,95 @@
             finally { document.getElementById('loading').classList.add('hidden'); }
         }
 
-        function openModal(id) {
-            document.getElementById('modal-title').innerText = `ประวัติ: ${id}`;
-            const tbody = document.getElementById('modal-body');
-            tbody.innerHTML = "";
-            const history = globalHistory.filter(h => h.Machine_ID === id);
-            if(history.length === 0) tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4">ไม่มีประวัติ</td></tr>`;
-            else history.reverse().forEach(item => {
-                tbody.innerHTML += `<tr class="border-b"><td class="py-2 px-3 text-sm">${item.Timestamp}</td><td class="py-2 px-3 text-sm">${item.Issue}</td><td class="py-2 px-3 text-sm">${item.Action_Taken}</td><td class="py-2 px-3 text-sm">${item.Technician}</td></tr>`;
+        // Dashboard & Map
+        function updateDashboard(machines) {
+            let r=0, w=0, b=0;
+            machines.forEach(m => { if(m.Status.includes("🟢")) r++; else if(m.Status.includes("🔴")) b++; else w++; });
+            document.getElementById('stat-total').innerText = machines.length; document.getElementById('stat-ready').innerText = r; document.getElementById('stat-broken').innerText = b;
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['พร้อมใช้งาน','รอตรวจสอบ','แจ้งซ่อม'], datasets: [{ data: [r, w, b], backgroundColor: ['#22c55e', '#eab308', '#ef4444'], borderWidth: 0 }] }, options: { plugins: { legend: { display: false } }, cutout: '70%' } });
+        }
+
+        function toggleDisplayMode(mode) {
+            if(mode === 'grid') { document.getElementById('machine-grid').classList.remove('hidden'); document.getElementById('machine-map').classList.add('hidden'); } 
+            else { document.getElementById('machine-map').classList.remove('hidden'); document.getElementById('machine-grid').classList.add('hidden'); }
+        }
+
+        function renderMap(machines) {
+            const mapContainer = document.getElementById('map-container'); mapContainer.innerHTML = "";
+            const positions = [{x:20,y:30}, {x:50,y:25}, {x:80,y:40}, {x:30,y:70}, {x:70,y:75}, {x:10,y:80}];
+            machines.forEach((m, i) => {
+                const pos = positions[i % positions.length];
+                const dotColor = m.Status.includes("🟢") ? "bg-green-500" : (m.Status.includes("🔴") ? "bg-red-500" : "bg-yellow-400");
+                const ping = m.Status.includes("🔴") ? `<div class="absolute inset-0 rounded-full ${dotColor} ping-alert"></div>` : "";
+                mapContainer.innerHTML += `
+                    <div class="absolute cursor-pointer group" style="left:${pos.x}%; top:${pos.y}%;" onclick="openHistory('${m.Machine_ID}')">
+                        <div class="relative w-6 h-6">${ping}<div class="w-6 h-6 rounded-full ${dotColor} border-2 border-white shadow-lg relative z-10"></div></div>
+                        <div class="absolute top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 z-20 whitespace-nowrap text-center"><b>${m.Machine_ID}</b><br/>${m.Location}</div>
+                    </div>`;
             });
+        }
+
+        // Scan QR Logic
+        function checkUrlParams() {
+            const scanId = new URLSearchParams(window.location.search).get('scan');
+            if (scanId) {
+                const machine = globalData.machines.find(m => m.Machine_ID === scanId);
+                if (machine) { currentScannedId = scanId; showScanResultModal(machine); } 
+                else alert("ไม่พบข้อมูลเครื่องที่สแกน");
+            }
+        }
+        function showScanResultModal(m) {
+            document.getElementById('scan-res-id').innerText = m.Machine_ID; document.getElementById('scan-res-name').innerText = m.Name;
+            document.getElementById('scan-res-loc').innerText = m.Location || "-"; document.getElementById('scan-res-status').innerText = m.Status;
+            let iconHtml = m.Status.includes("🟢") ? '<i class="fas fa-check-circle text-green-500 text-lg mt-0.5"></i>' : (m.Status.includes("🔴") ? '<i class="fas fa-times-circle text-red-500 text-lg mt-0.5"></i>' : '<i class="fas fa-exclamation-triangle text-yellow-500 text-lg mt-0.5"></i>');
+            document.getElementById('scan-res-icon').innerHTML = iconHtml;
+            document.getElementById('scan-modal').classList.remove('hidden');
+        }
+        function closeScanModal() { document.getElementById('scan-modal').classList.add('hidden'); }
+        function jumpToUpdateFromScan() { closeScanModal(); switchView('update'); document.getElementById('form-machine-id').value = currentScannedId; document.getElementById('form-status').value = "🔴 แจ้งซ่อม / เครื่องเสีย"; }
+        function openHistoryFromScan() { closeScanModal(); openHistory(currentScannedId); }
+
+        // Report & History
+        function renderReport(history) {
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = history.length === 0 ? `<tr><td colspan="5" class="text-center py-4">ไม่มีข้อมูล</td></tr>` : "";
+            [...history].reverse().forEach(item => {
+                tbody.innerHTML += `<tr class="border-b"><td class="py-3 px-4 text-sm">${item.Timestamp}</td><td class="py-3 px-4 text-sm font-bold">${item.Machine_ID}</td><td class="py-3 px-4 text-sm text-red-600">${item.Issue}</td><td class="py-3 px-4 text-sm text-green-600">${item.Action_Taken}</td><td class="py-3 px-4 text-sm">${item.Technician}</td></tr>`;
+            });
+        }
+
+        function exportToCSV() {
+            if(globalData.history.length === 0) { alert("ไม่มีข้อมูล"); return; }
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFFTimestamp,Machine_ID,Issue,Action_Taken,Technician\n";
+            globalData.history.forEach(r => csvContent += [r.Timestamp, r.Machine_ID, r.Issue, r.Action_Taken, r.Technician].map(s=>`"${s}"`).join(",") + "\n");
+            const link = document.createElement("a"); link.href = encodeURI(csvContent); link.download = "report.csv";
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        function openHistory(id) {
+            document.getElementById('modal-title').innerText = `ประวัติ: ${id}`;
+            const tbody = document.getElementById('modal-body'); tbody.innerHTML = "";
+            const h = globalData.history.filter(x => x.Machine_ID === id);
+            if(h.length === 0) tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">ไม่มีประวัติ</td></tr>`;
+            else h.reverse().forEach(i => tbody.innerHTML += `<tr class="border-b"><td class="py-2 text-sm">${i.Timestamp}</td><td class="py-2 text-sm text-red-600">${i.Issue}</td><td class="py-2 text-sm text-green-600">${i.Action_Taken}</td></tr>`);
             document.getElementById('history-modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('history-modal').classList.add('hidden'); }
-
+        
+        // Print
         function printQR(id, name, loc) {
-            const scanUrl = `${window.location.href.split('?')[0]}?scan=${id}`; 
-            document.getElementById('print-id').innerText = id;
-            document.getElementById('print-name').innerText = name;
-            document.getElementById('print-location').innerText = loc || '-';
-            document.getElementById('print-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scanUrl)}`;
+            document.getElementById('print-id').innerText = id; document.getElementById('print-name').innerText = name; document.getElementById('print-location').innerText = loc || '';
+            document.getElementById('print-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.href.split('?')[0]+"?scan="+id)}`;
             document.getElementById('print-qr').onload = () => window.print();
         }
 
         function getMockData() {
             return {
-                machines: [
-                    { Machine_ID: "M-001", Name: "เครื่องปั๊มโลหะ A", Location: "โซน Production 1", Status: "🟢 พร้อมใช้งาน", Last_Update: "23/07/2026 08:00" },
-                    { Machine_ID: "M-002", Name: "สายพานลำเลียง 1", Location: "โซน B2", Status: "🔴 แจ้งซ่อม", Last_Update: "23/07/2026 15:30" }
-                ],
-                history: [
-                    { Timestamp: "23/07/2026 15:30", Machine_ID: "M-002", Issue: "สายพานขาด", Action_Taken: "-", Technician: "สมชาย" }
-                ]
+                machines: [ { Machine_ID: "M-001", Name: "เครื่องปั๊มโลหะ A", Location: "โซน Production 1", Status: "🟢 พร้อมใช้งาน", Image_URL: "-" }, { Machine_ID: "M-002", Name: "สายพานลำเลียง", Location: "โซน B2", Status: "🔴 แจ้งซ่อม", Image_URL: "-" } ],
+                inventory: [ { Part_ID: "P-001", Name: "ลูกปืนมอเตอร์ (Bearing)", Quantity: 5, Min_Stock: 10, Location: "ตู้ A", Image_URL: "-" } ],
+                history: [ { Timestamp: "23/07/2026 15:30", Machine_ID: "M-002", Issue: "สายพานขาด", Action_Taken: "-", Technician: "สมชาย" } ]
             };
         }
 
