@@ -367,11 +367,9 @@
     <!-- ================= JAVASCRIPT ================= -->
     <script>
         // ⚠️ การตั้งค่า (Configuration) 
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwtfCSoKiIbAka0Oaz5E1wN9hLbkIgxbid6Cdowi1OnqR7DuGXcVRqmp7fy1h6recnITQ/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwwEakRS_pm1CiM8D42oOky3apw4qhkxGIQgYgO8wbmDdCdMQFSywaqHAxAsn4yvHH-Dw/exec"; 
         const LIFF_ID = "ใส่_LIFF_ID_ของท่าน"; 
         
-        const fallbackImg = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%2394a3b8'%3Eไม่มีรูปภาพ%3C/text%3E%3C/svg%3E";
-
         let globalData = { machines: [], history: [], locations: [], users: [], settings: [], audit: [], pm: [] };
         let sysSettings = { name: "Smart CMMS", format: "DD/MM/YYYY", logoUrl: "", logoW: "150", logoH: "auto" };
         let pagedData = []; let currentPage = 1; const itemsPerPage = 10;
@@ -385,7 +383,21 @@
         function showSaveToast(msg) { Toast.fire({ icon: 'info', title: msg, timer: false, didOpen: () => { Swal.showLoading(); } }); }
         function hideSaveToast(successMsg) { if(successMsg) { Toast.fire({ icon: 'success', title: successMsg, timer: 2000 }); } else { Swal.close(); } }
         function showError(msg) { Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: msg, confirmButtonColor: '#3b82f6' }); }
-        function getImgHtml(url, extraClass="img-cover") { if (!url || url.length < 10 || url === "-") { return `<div class="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-300"><i class="fas fa-image text-3xl mb-1"></i><span class="text-[10px] mt-1">ไม่มีรูปภาพ</span></div>`; } return `<img src="${url}" onerror="this.outerHTML='<div class=\\'w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-300\\'><i class=\\'fas fa-image text-3xl mb-1\\'></i><span class=\\'text-[10px] mt-1\\'>ไม่มีรูปภาพ</span></div>';" class="${extraClass}">`; }
+        
+        // ✨ ฟังก์ชันจัดการรูปภาพ (แปลงลิงก์ Google Drive อัตโนมัติ ให้โชว์บนหน้าเว็บได้ทันที)
+        function getImgHtml(url, extraClass="img-cover") { 
+            if (!url || url.length < 10 || url === "-") { 
+                return `<div class="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-300"><i class="fas fa-image text-3xl mb-1"></i><span class="text-[10px] mt-1">ไม่มีรูปภาพ</span></div>`; 
+            } 
+            let finalUrl = url;
+            if (url.includes("drive.google.com")) {
+                const match = url.match(/id=([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    finalUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+                }
+            }
+            return `<img src="${finalUrl}" onerror="this.outerHTML='<div class=\\'w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-300\\'><i class=\\'fas fa-image text-3xl mb-1\\'></i><span class=\\'text-[10px] mt-1\\'>ไม่มีรูปภาพ</span></div>';" class="${extraClass}">`; 
+        }
 
         window.onload = async function() {
             document.getElementById('loading').classList.remove('hidden');
