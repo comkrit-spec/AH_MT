@@ -19,7 +19,6 @@
         body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
         .img-cover { object-fit: cover; width: 100%; height: 100%; }
         
-        /* สไตล์สำหรับ Print สติกเกอร์ QR Code */
         @media print { 
             body * { visibility: hidden; } 
             #print-area, #print-area * { visibility: visible; } 
@@ -52,7 +51,7 @@
             <div id="sync-indicator" class="absolute right-4 top-4 hidden flex items-center gap-1"><i class="fas fa-sync-alt text-[10px] text-green-400 sync-icon"></i></div>
         </div>
         
-        <!-- เมนูหลักแบบใหม่ สั้นกระชับ และดันการตั้งค่าลงล่าง -->
+        <!-- เมนูหลัก -->
         <nav class="p-4 flex-1 overflow-y-auto flex flex-col">
             <div class="space-y-2">
                 <p class="text-[10px] text-slate-400 font-semibold mb-2 uppercase tracking-wider">เมนูทั่วไป (Public)</p>
@@ -103,19 +102,7 @@
                     <button onclick="fetchData()" class="bg-white border hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fas fa-sync-alt mr-2 text-blue-500"></i> อัปเดตข้อมูล</button>
                 </div>
                 
-                <!-- KPI: MTTR & MTBF -->
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-2xl text-white shadow-sm border border-blue-400">
-                        <div class="flex justify-between items-start"><p class="text-[10px] uppercase tracking-wider font-bold opacity-80">MTTR (เวลาเฉลี่ยในการซ่อม)</p><i class="fas fa-stopwatch opacity-50 text-xl"></i></div>
-                        <h3 class="text-3xl font-black mt-1" id="kpi-mttr">0.0 <span class="text-sm font-normal text-blue-100">ชม.</span></h3>
-                    </div>
-                    <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 p-4 rounded-2xl text-white shadow-sm border border-indigo-400">
-                        <div class="flex justify-between items-start"><p class="text-[10px] uppercase tracking-wider font-bold opacity-80">MTBF (เวลาเฉลี่ยก่อนเครื่องเสีย)</p><i class="fas fa-heartbeat opacity-50 text-xl"></i></div>
-                        <h3 class="text-3xl font-black mt-1" id="kpi-mtbf">0.0 <span class="text-sm font-normal text-indigo-100">วัน</span></h3>
-                    </div>
-                </div>
-
-                <!-- สรุปสถานะ 4 กล่อง (ลบกราฟออก) -->
+                <!-- สรุปสถานะ 4 กล่อง (MTTR/MTBF ถูกลบออกแล้ว) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div id="card-all" onclick="setOverviewFilter('all')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md ring-2 ring-blue-400 scale-105 flex items-center"><div class="rounded-full bg-blue-100 p-3 mr-3 text-blue-600"><i class="fas fa-cogs text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">ทั้งหมด</p><h3 class="text-2xl font-black text-gray-800"><span id="stat-total">0</span> <span class="text-xs font-bold text-gray-400">เครื่อง</span></h3></div></div>
                     <div id="card-ready" onclick="setOverviewFilter('ready')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md flex items-center"><div class="rounded-full bg-green-100 p-3 mr-3 text-green-600"><i class="fas fa-check-circle text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">พร้อมใช้งาน</p><h3 class="text-2xl font-black text-green-600"><span id="stat-ready">0</span> <span class="text-xs font-bold text-green-400">เครื่อง</span></h3></div></div>
@@ -133,11 +120,21 @@
                 <form id="req-form" onsubmit="submitReportIssue(event)" class="space-y-4">
                     <div><label class="block text-sm font-semibold mb-1">เลือกเครื่องจักรที่เสีย *</label><select id="req-machine" required class="w-full border rounded-xl px-4 py-2.5 bg-gray-50 font-bold outline-none focus:ring focus:ring-red-100"></select></div>
                     <div><label class="block text-sm font-semibold mb-1">อาการเสียที่พบ *</label><textarea id="req-issue" rows="3" required placeholder="ระบุอาการให้ชัดเจน เพื่อให้ช่างเตรียมเครื่องมือ" class="w-full border rounded-xl px-4 py-2 outline-none focus:ring focus:ring-red-100"></textarea></div>
+                    
+                    <!-- 🌟 อัปเดต: กล่องลากวางรูปภาพ (Drag & Drop) -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
-                        <label class="font-bold text-sm block mb-1"><i class="fas fa-camera text-blue-500"></i> ถ่ายรูป/แนบรูปอาการเสีย (ถ้ามี):</label>
-                        <input type="file" id="req-file-img" accept="image/*" class="w-full text-xs bg-white p-1 border rounded cursor-pointer outline-none">
+                        <label class="font-bold text-sm block mb-2"><i class="fas fa-camera text-blue-500"></i> ถ่ายรูป/แนบรูปอาการเสีย (ถ้ามี):</label>
+                        <div class="relative flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-blue-50 hover:border-blue-400 transition overflow-hidden group">
+                            <input type="file" id="req-file-img" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="flex flex-col items-center justify-center text-center pointer-events-none p-4">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-1 group-hover:text-blue-500 transition"></i>
+                                <p class="text-xs text-gray-500"><span class="font-bold text-blue-500">คลิกเลือกรูป</span> หรือลากไฟล์มาวาง</p>
+                                <p id="req-filename-img" class="text-[11px] text-green-600 font-bold mt-1 truncate px-2 w-full"></p>
+                            </div>
+                        </div>
                         <input type="hidden" id="req-img-base64">
                     </div>
+
                     <div><label class="block text-sm font-semibold mb-1">ชื่อผู้แจ้ง / รหัสพนักงาน *</label><input type="text" id="req-reporter" required placeholder="ระบุชื่อ หรือ รหัสพนักงาน" class="w-full border border-blue-300 rounded-xl px-4 py-2.5 font-bold outline-none focus:ring focus:ring-blue-100"></div>
                     <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl shadow mt-4 transition">ส่งใบแจ้งซ่อม (ถึง MT ทันที)</button>
                 </form>
@@ -158,7 +155,6 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-database text-blue-600 mr-2"></i>ข้อมูลเครื่องจักร (Master Data)</h2>
                     
-                    <!-- 🌟 ส่วนช่องค้นหาด่วน และปุ่มจัดการ -->
                     <div class="flex flex-wrap gap-2 items-center w-full md:w-auto">
                         <div class="relative w-full md:w-56">
                             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -222,7 +218,6 @@
                 
                 <div class="overflow-x-auto border rounded-xl mb-4 flex-1"><table class="w-full text-left text-xs min-w-max"><thead class="bg-gray-100"><tr><th class="py-3 px-4">วัน-เวลา</th><th class="py-3 px-4">รหัสเครื่อง</th><th class="py-3 px-4">อาการเสีย</th><th class="py-3 px-4">การแก้ไข</th><th class="py-3 px-4">อะไหล่</th><th class="py-3 px-4">ช่าง</th></tr></thead><tbody id="report-adv-body"></tbody></table></div>
                 
-                <!-- 🌟 จัดระเบียบการแบ่งหน้า -->
                 <div class="flex flex-col md:flex-row justify-between items-center text-sm font-bold text-gray-600 bg-gray-50 p-4 rounded-xl border gap-4">
                     <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border shadow-sm">
                         <i class="fas fa-list text-gray-400"></i>
@@ -254,7 +249,6 @@
                     <button onclick="switchSetTab('sys')" id="set-btn-sys" class="w-full text-left px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-lg transition"><i class="fas fa-database mr-2"></i> ระบบ & Audit Log</button>
                 </div>
                 <div class="w-full md:w-3/4 p-6 overflow-y-auto">
-                    <!-- Tab 1: ทั่วไป -->
                     <div id="set-tab-gen" class="space-y-5">
                         <h4 class="font-bold text-xl border-b pb-2 text-gray-800">ตั้งค่าพื้นฐานและโลโก้ (General)</h4>
                         <div><label class="block text-sm font-bold mb-1">ชื่อระบบ (System Name)</label><input type="text" id="set-sysname" class="w-full border rounded-lg p-2.5 text-sm bg-gray-50 focus:ring focus:ring-blue-200 outline-none"></div>
@@ -269,7 +263,6 @@
                         </div>
                         <div><label class="block text-sm font-bold mb-1">รูปแบบวันที่ (Date Format)</label><select id="set-dateformat" class="w-full border rounded-lg p-2.5 text-sm bg-gray-50 font-bold focus:ring focus:ring-blue-200 outline-none"><option value="DD/MM/YYYY">DD/MM/YYYY (เช่น 31/12/2026)</option><option value="YYYY-MM-DD">YYYY-MM-DD (เช่น 2026-12-31)</option></select></div>
                         
-                        <!-- ช่องตั้งค่า Email และ LINE -->
                         <div class="mt-4 border-t pt-4">
                             <label class="block text-sm font-bold mb-1 text-red-600"><i class="fas fa-envelope mr-1"></i> Email รับแจ้งซ่อม (Admin Email)</label>
                             <input type="email" id="set-adminemail" placeholder="ระบุ Email เพื่อรับแจ้งเตือน (เว้นว่างได้ถ้าไม่ใช้)" class="w-full border rounded-lg p-2.5 text-sm bg-gray-50 focus:ring focus:ring-red-200 outline-none">
@@ -343,7 +336,7 @@
         </div>
     </div>
 
-    <!-- Modal Master Edit -->
+    <!-- Modal Master Edit (รองรับ Drag & Drop รูปภาพและ PDF) -->
     <div id="edit-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto border-t-8 border-blue-600">
             <div class="flex justify-between items-center border-b pb-3 mb-4"><h3 class="text-xl font-bold text-gray-800" id="modal-machine-title"><i class="fas fa-edit text-blue-500 mr-2"></i> ข้อมูลเครื่องจักร</h3><button type="button" onclick="deleteMachine()" id="btn-del-machine" class="text-red-500 font-bold text-xs hover:bg-red-50 px-3 py-1.5 rounded-lg border border-red-200 transition"><i class="fas fa-trash-alt mr-1"></i> ลบเครื่องนี้</button></div>
@@ -353,10 +346,37 @@
                 <div class="grid grid-cols-2 gap-3"><div><label class="font-bold block mb-1">สถานที่ติดตั้ง:</label><select id="edit-loc" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200 outline-none"></select></div><div><label class="font-bold block mb-1">Serial Number:</label><input type="text" id="edit-sn" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200 outline-none"></div></div>
                 <div class="grid grid-cols-2 gap-3"><div><label class="font-bold block mb-1">แบรนด์:</label><input type="text" id="edit-brand" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200 outline-none"></div><div><label class="font-bold block mb-1">รุ่น:</label><input type="text" id="edit-model" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200 outline-none"></div></div>
                 <div class="grid grid-cols-2 gap-3"><div><label class="font-bold text-red-600 block mb-1">วันหมดประกัน:</label><input type="date" id="edit-warranty" class="w-full border rounded-lg p-2 focus:ring focus:ring-red-200 outline-none"></div><div><label class="font-bold block mb-1">บริษัทผู้ขาย (Vendor):</label><input type="text" id="edit-vendor" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200 outline-none"></div></div>
+                
+                <!-- 🌟 กล่อง Drag & Drop อัปโหลดรูปภาพ -->
                 <div class="bg-gray-50 p-4 rounded-xl border mt-3 space-y-4">
-                    <div><label class="font-bold block mb-1.5"><i class="fas fa-image text-blue-500 mr-1"></i> อัปโหลดรูปภาพใหม่ (บีบอัดอัตโนมัติ):</label><input type="file" id="edit-file-img" accept="image/*" class="w-full bg-white p-1.5 border rounded-lg cursor-pointer text-[10px] outline-none"><input type="hidden" id="edit-img-base64"></div>
-                    <div><label class="font-bold block mb-1.5"><i class="fas fa-file-pdf text-red-500 mr-1"></i> แนบเอกสารคู่มือ/ใบประกัน (PDF):</label><input type="file" id="edit-file-doc" accept="application/pdf" class="w-full bg-white p-1.5 border rounded-lg cursor-pointer text-[10px] outline-none"><input type="hidden" id="edit-doc-base64"></div>
+                    <div>
+                        <label class="font-bold block mb-2"><i class="fas fa-image text-blue-500 mr-1"></i> อัปโหลดรูปภาพใหม่ (บีบอัดอัตโนมัติ):</label>
+                        <div class="relative flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-blue-50 hover:border-blue-400 transition overflow-hidden group">
+                            <input type="file" id="edit-file-img" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="flex flex-col items-center justify-center text-center pointer-events-none p-4">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-1 group-hover:text-blue-500 transition"></i>
+                                <p class="text-xs text-gray-500"><span class="font-bold text-blue-500">คลิกเลือกรูป</span> หรือลากไฟล์มาวาง</p>
+                                <p id="edit-filename-img" class="text-[11px] text-green-600 font-bold mt-1 truncate px-2 w-full"></p>
+                            </div>
+                        </div>
+                        <input type="hidden" id="edit-img-base64">
+                    </div>
+                    
+                    <!-- 🌟 กล่อง Drag & Drop อัปโหลด PDF -->
+                    <div>
+                        <label class="font-bold block mb-2"><i class="fas fa-file-pdf text-red-500 mr-1"></i> แนบเอกสารคู่มือ/ใบประกัน (PDF):</label>
+                        <div class="relative flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-red-50 hover:border-red-400 transition overflow-hidden group">
+                            <input type="file" id="edit-file-doc" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="flex flex-col items-center justify-center text-center pointer-events-none p-4">
+                                <i class="fas fa-file-upload text-2xl text-gray-400 mb-1 group-hover:text-red-500 transition"></i>
+                                <p class="text-xs text-gray-500"><span class="font-bold text-red-500">คลิกเลือกไฟล์ PDF</span> หรือลากไฟล์มาวาง</p>
+                                <p id="edit-filename-doc" class="text-[11px] text-green-600 font-bold mt-1 truncate px-2 w-full"></p>
+                            </div>
+                        </div>
+                        <input type="hidden" id="edit-doc-base64">
+                    </div>
                 </div>
+
                 <div class="flex gap-3 pt-5"><button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm shadow transition"><i class="fas fa-cloud-upload-alt mr-1"></i> บันทึกข้อมูล</button><button type="button" onclick="closeEditModal()" class="w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition">ยกเลิก</button></div>
             </form>
         </div>
@@ -409,7 +429,7 @@
         function hideSaveToast(successMsg) { if(successMsg) { Toast.fire({ icon: 'success', title: successMsg, timer: 2000 }); } else { Swal.close(); } }
         function showError(msg) { Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: msg, confirmButtonColor: '#3b82f6' }); }
         
-        // ✨ ฟังก์ชันจัดการรูปภาพ (แปลงลิงก์ Google Drive อัตโนมัติ ให้โชว์บนหน้าเว็บได้ทันที)
+        // ✨ ฟังก์ชันจัดการรูปภาพ
         function getSafeImageUrl(url) {
             if (!url || url.length < 10 || url === "-") return null;
             let finalUrl = url;
@@ -571,28 +591,24 @@
                 if(currentOverviewFilter === 'broken' && m.Status.includes("🔴")) show = true;
                 if (show) {
                     const dotColor = m.Status.includes("🟢") ? "bg-green-500" : (m.Status.includes("🔴") ? "bg-red-500" : "bg-yellow-400");
-                    let imgHtml = `<div class="h-24 overflow-hidden bg-gray-50 flex items-center justify-center">${getImgHtml(m.Image_URL, "img-cover")}</div>`;
-                    grid.innerHTML += `<div class="bg-white rounded-xl shadow-sm border overflow-hidden cursor-pointer hover:shadow-md transition transform hover:-translate-y-1" onclick="openProfileModal('${m.Machine_ID}')">${imgHtml}<div class="p-3"><div class="flex justify-between items-start mb-1"><div><h3 class="font-bold text-sm text-gray-800">${m.Machine_ID}</h3><p class="text-[10px] text-gray-500 truncate w-24">${m.Name}</p></div><div class="w-3 h-3 rounded-full ${dotColor} border border-gray-100 shadow-sm mt-0.5"></div></div><p class="text-[9px] mt-1 text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md inline-block border border-gray-100 truncate w-full">📍 ${m.Location}</p></div></div>`;
+                    let imgHtml = `<div class="h-40 overflow-hidden bg-gray-50 flex items-center justify-center">${getImgHtml(m.Image_URL, "img-cover")}</div>`;
+                    
+                    grid.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden cursor-pointer hover:shadow-md transition transform hover:-translate-y-1 flex flex-col h-full" onclick="openProfileModal('${m.Machine_ID}')">
+                        ${imgHtml}
+                        <div class="p-3 flex-1 flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-1 gap-2">
+                                <div>
+                                    <h3 class="font-bold text-sm text-gray-800 hover:text-blue-600">${m.Machine_ID}</h3>
+                                    <p class="text-[11px] text-gray-500 line-clamp-2 leading-snug mt-0.5">${m.Name}</p>
+                                </div>
+                                <div class="w-3 h-3 rounded-full ${dotColor} border border-gray-100 shadow-sm mt-1 shrink-0"></div>
+                            </div>
+                            <p class="text-[10px] mt-2 text-gray-500 bg-gray-50 px-2 py-1.5 rounded-lg border border-gray-100 truncate w-full"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> ${m.Location}</p>
+                        </div>
+                    </div>`;
                 }
             });
-
-            // คำนวณ KPI: MTTR และ MTBF
-            if(!gridOnly) {
-                let totalDowntime = 0; let repairCount = 0;
-                globalData.history.forEach(h => { let dt = parseFloat(h.Downtime_Hours); if (!isNaN(dt) && dt > 0) { totalDowntime += dt; repairCount++; } });
-                let mttr = repairCount > 0 ? (totalDowntime / repairCount).toFixed(1) : "0.0";
-                document.getElementById('kpi-mttr').innerHTML = `${mttr} <span class="text-sm font-normal text-blue-100">ชม.</span>`;
-
-                let breakdowns = globalData.history.filter(h => h.Issue && h.Issue !== "ปิดงานด่วน" && h.Issue !== "-").length;
-                let activeMachines = machines.length; let daysInOperation = 30;
-                if (globalData.history.length > 0) {
-                    let firstDate = new Date(globalData.history[0].Timestamp);
-                    let diffDays = Math.ceil(Math.abs(new Date() - firstDate) / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) daysInOperation = diffDays;
-                }
-                let mtbf = breakdowns > 0 ? ((daysInOperation * activeMachines) / breakdowns).toFixed(1) : (daysInOperation * activeMachines).toFixed(1);
-                document.getElementById('kpi-mtbf').innerHTML = `${mtbf} <span class="text-sm font-normal text-indigo-100">วัน</span>`;
-            }
 
             if (gridOnly) return; 
             document.getElementById('stat-total').innerText = machines.length; 
@@ -635,18 +651,39 @@
             const container = document.getElementById('master-card-view'); container.innerHTML = "";
             if(machinesData.length === 0) { container.innerHTML = `<div class="col-span-full text-center py-6 text-gray-400">ไม่พบข้อมูลเครื่องจักร</div>`; return; }
             machinesData.forEach(m => {
-                let imgHtml = `<div class="h-32 bg-gray-100 flex items-center justify-center overflow-hidden">${getImgHtml(m.Image_URL, "img-cover")}</div>`;
+                let imgHtml = `<div class="h-48 bg-gray-50 flex items-center justify-center overflow-hidden">${getImgHtml(m.Image_URL, "img-cover")}</div>`;
                 let statusColor = m.Status.includes("🟢") ? "bg-green-500" : (m.Status.includes("🔴") ? "bg-red-500" : "bg-yellow-400");
-                container.innerHTML += `<div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm relative"><div class="absolute top-2 left-2 z-10 flex gap-2"><input type="checkbox" value="${m.Machine_ID}" class="qr-checkbox w-4 h-4 rounded shadow-sm cursor-pointer"></div><div class="absolute top-2 right-2 z-10 w-3 h-3 rounded-full border-2 border-white shadow-sm ${statusColor}"></div><div class="cursor-pointer" onclick="openProfileModal('${m.Machine_ID}')">${imgHtml}</div><div class="p-3"><div class="flex justify-between items-center mb-1"><h4 class="font-bold text-sm cursor-pointer" onclick="openProfileModal('${m.Machine_ID}')">${m.Machine_ID}</h4><div class="flex gap-1"><button onclick="printSingleQR('${m.Machine_ID}')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold border border-slate-200 hover:bg-slate-200 transition" title="พิมพ์ QR"><i class="fas fa-qrcode"></i></button><button onclick="openEditModal('${m.Machine_ID}')" class="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition"><i class="fas fa-edit"></i> แก้ไข</button></div></div><p class="text-xs text-gray-600 truncate">${m.Name}</p></div></div>`;
+                
+                container.innerHTML += `
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm relative flex flex-col h-full hover:shadow-md transition">
+                    <div class="absolute top-2 left-2 z-10 flex gap-2">
+                        <input type="checkbox" value="${m.Machine_ID}" class="qr-checkbox w-4 h-4 rounded shadow-sm cursor-pointer accent-blue-600">
+                    </div>
+                    <div class="absolute top-2 right-2 z-10 w-3 h-3 rounded-full border-2 border-white shadow-sm ${statusColor}"></div>
+                    <div class="cursor-pointer" onclick="openProfileModal('${m.Machine_ID}')">
+                        ${imgHtml}
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2 gap-2">
+                            <h4 class="font-bold text-sm cursor-pointer hover:text-blue-600 transition" onclick="openProfileModal('${m.Machine_ID}')">${m.Machine_ID}</h4>
+                            <div class="flex gap-1 shrink-0">
+                                <button onclick="printSingleQR('${m.Machine_ID}')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1.5 rounded-lg font-bold border border-slate-200 hover:bg-slate-200 transition shadow-sm" title="พิมพ์ QR"><i class="fas fa-qrcode"></i></button>
+                                <button onclick="openEditModal('${m.Machine_ID}')" class="text-[10px] bg-blue-50 text-blue-600 px-2 py-1.5 rounded-lg font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition shadow-sm"><i class="fas fa-edit"></i> แก้ไข</button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed bg-gray-50 p-2 rounded-lg border border-gray-100 mt-1">${m.Name}</p>
+                    </div>
+                </div>`;
             });
         }
 
-        // --- 🌟 ระบบประมวลผลไฟล์แนบ (รูปภาพ และ PDF) แบบมีลิมิต ---
+        // --- 🌟 ระบบประมวลผลไฟล์แนบ (รูปภาพ และ PDF) แบบลากและวาง ---
         
         // 1. ฟอร์มแจ้งซ่อม (หน้า Public)
         document.getElementById('req-file-img').addEventListener('change', e => { 
             const f=e.target.files[0]; 
             if(f){ 
+                document.getElementById('req-filename-img').innerText = f.name; // แสดงชื่อไฟล์สีเขียว
                 const r=new FileReader(); 
                 r.onload=evt=>{ 
                     const img=new Image(); 
@@ -667,6 +704,7 @@
         document.getElementById('edit-file-img').addEventListener('change', e => { 
             const f=e.target.files[0]; 
             if(f){ 
+                document.getElementById('edit-filename-img').innerText = f.name; // แสดงชื่อไฟล์
                 const r=new FileReader(); 
                 r.onload=evt=>{ 
                     const img=new Image(); 
@@ -692,8 +730,10 @@
                     showError("ไฟล์เอกสาร PDF ใหญ่เกินไป (กรุณาใช้ไฟล์ขนาดไม่เกิน 5MB ครับ)");
                     document.getElementById('edit-file-doc').value = ""; 
                     document.getElementById('edit-doc-base64').value = "";
+                    document.getElementById('edit-filename-doc').innerText = "";
                     return;
                 }
+                document.getElementById('edit-filename-doc').innerText = f.name; // แสดงชื่อไฟล์ PDF
                 const r=new FileReader(); 
                 r.onload=evt=>{ document.getElementById('edit-doc-base64').value=evt.target.result; }; 
                 r.readAsDataURL(f); 
@@ -701,8 +741,15 @@
         });
 
         function openAddMachineModal() {
-            document.getElementById('edit-form').reset(); document.getElementById('edit-is-new').value = "true"; document.getElementById('btn-del-machine').classList.add('hidden');
+            document.getElementById('edit-form').reset(); 
+            document.getElementById('edit-is-new').value = "true"; 
+            document.getElementById('btn-del-machine').classList.add('hidden');
             document.getElementById('modal-machine-title').innerHTML = '<i class="fas fa-plus-circle text-green-500 mr-2"></i> เพิ่มเครื่องจักรใหม่';
+            
+            // รีเซ็ตข้อความชื่อไฟล์
+            document.getElementById('edit-filename-img').innerText = "";
+            document.getElementById('edit-filename-doc').innerText = "";
+            
             let maxNum = 0; globalData.machines.forEach(m => { if(m.Machine_ID.startsWith("M-")) { let num = parseInt(m.Machine_ID.substring(2)); if(num > maxNum) maxNum = num; } });
             document.getElementById('edit-id').value = "M-" + String(maxNum + 1).padStart(3, '0'); document.getElementById('edit-img-base64').value = ""; document.getElementById('edit-doc-base64').value = "";
             document.getElementById('edit-modal').classList.remove('hidden');
@@ -714,7 +761,12 @@
             document.getElementById('edit-id').value = m.Machine_ID; document.getElementById('edit-name').value = m.Name; document.getElementById('edit-loc').value = m.Location; document.getElementById('edit-brand').value = m.Brand!=="-"?m.Brand:""; document.getElementById('edit-model').value = m.Model!=="-"?m.Model:""; document.getElementById('edit-sn').value = m.Serial_No!=="-"?m.Serial_No:"";
             let exp = m.Warranty_Exp!=="-"?m.Warranty_Exp:""; if(exp.includes("/")) exp = exp.split("/").reverse().join("-"); else if(exp.length>10) exp = exp.substring(0,10);
             document.getElementById('edit-warranty').value = exp; document.getElementById('edit-vendor').value = m.Vendor_Contact!=="-"?m.Vendor_Contact:"";
-            document.getElementById('edit-img-base64').value = ""; document.getElementById('edit-doc-base64').value = ""; document.getElementById('edit-file-img').value = ""; document.getElementById('edit-file-doc').value = "";
+            
+            // รีเซ็ตข้อความชื่อไฟล์
+            document.getElementById('edit-img-base64').value = ""; document.getElementById('edit-doc-base64').value = ""; 
+            document.getElementById('edit-file-img').value = ""; document.getElementById('edit-file-doc').value = "";
+            document.getElementById('edit-filename-img').innerText = ""; document.getElementById('edit-filename-doc').innerText = "";
+
             document.getElementById('edit-modal').classList.remove('hidden');
         }
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
@@ -797,7 +849,14 @@
                 System_URL: window.location.href.split('?')[0]
             }; 
             switchView('overview'); showSaveToast("กำลังส่งใบแจ้งซ่อม..."); 
-            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); hideSaveToast("ส่งเรื่องแจ้งซ่อมถึงทีม MT เรียบร้อย!"); document.getElementById('req-form').reset(); document.getElementById('req-img-base64').value=""; fetchData(); } catch(err) { hideSaveToast(); showError("ไม่สามารถส่งข้อมูลได้"); } 
+            try { 
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
+                hideSaveToast("ส่งเรื่องแจ้งซ่อมถึงทีม MT เรียบร้อย!"); 
+                document.getElementById('req-form').reset(); 
+                document.getElementById('req-img-base64').value=""; 
+                document.getElementById('req-filename-img').innerText=""; // ลบชื่อไฟล์เมื่อส่งสำเร็จ
+                fetchData(); 
+            } catch(err) { hideSaveToast(); showError("ไม่สามารถส่งข้อมูลได้"); } 
         }
 
         async function submitRelocate(e) { e.preventDefault(); const selectedMacs = Array.from(document.querySelectorAll('input[name="rel_mac_cb"]:checked')).map(cb => cb.value); if(selectedMacs.length === 0) { showError("กรุณาเลือกเครื่องจักรอย่างน้อย 1 เครื่องครับ"); return; } const payload = { action: "relocate", currentUser: liffProfileName, Machine_ID: selectedMacs, Location: document.getElementById('rel-loc').value, Technician: document.getElementById('rel-reporter').value }; switchView('overview'); showSaveToast("บันทึกพิกัด..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); hideSaveToast("อัปเดตสถานที่เรียบร้อย"); document.getElementById('rel-form').reset(); fetchData(); } catch(err) { hideSaveToast(); showError("เกิดข้อผิดพลาด"); } }
