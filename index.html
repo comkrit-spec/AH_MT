@@ -641,6 +641,65 @@
             });
         }
 
+        // --- 🌟 ระบบประมวลผลไฟล์แนบ (รูปภาพ และ PDF) แบบมีลิมิต ---
+        
+        // 1. ฟอร์มแจ้งซ่อม (หน้า Public)
+        document.getElementById('req-file-img').addEventListener('change', e => { 
+            const f=e.target.files[0]; 
+            if(f){ 
+                const r=new FileReader(); 
+                r.onload=evt=>{ 
+                    const img=new Image(); 
+                    img.onload=()=>{ 
+                        const cvs=document.createElement('canvas'); 
+                        const scale=600/img.width; 
+                        cvs.width=600; cvs.height=img.height*scale; 
+                        cvs.getContext('2d').drawImage(img,0,0,cvs.width,cvs.height); 
+                        document.getElementById('req-img-base64').value=cvs.toDataURL('image/jpeg',0.6); 
+                    }; 
+                    img.src=evt.target.result; 
+                }; 
+                r.readAsDataURL(f); 
+            }
+        });
+
+        // 2. ฟอร์มเพิ่ม/แก้ไขเครื่องจักร (Master Data) - รูปภาพ
+        document.getElementById('edit-file-img').addEventListener('change', e => { 
+            const f=e.target.files[0]; 
+            if(f){ 
+                const r=new FileReader(); 
+                r.onload=evt=>{ 
+                    const img=new Image(); 
+                    img.onload=()=>{ 
+                        const cvs=document.createElement('canvas'); 
+                        const scale=800/img.width; 
+                        cvs.width=800; 
+                        cvs.height=img.height*scale; 
+                        cvs.getContext('2d').drawImage(img,0,0,cvs.width,cvs.height); 
+                        document.getElementById('edit-img-base64').value=cvs.toDataURL('image/jpeg',0.6); 
+                    }; 
+                    img.src=evt.target.result; 
+                }; 
+                r.readAsDataURL(f); 
+            }
+        });
+
+        // 3. ฟอร์มเพิ่ม/แก้ไขเครื่องจักร (Master Data) - เอกสาร PDF (จำกัด 5MB)
+        document.getElementById('edit-file-doc').addEventListener('change', e => { 
+            const f=e.target.files[0]; 
+            if(f){ 
+                if(f.size > 5 * 1024 * 1024) { 
+                    showError("ไฟล์เอกสาร PDF ใหญ่เกินไป (กรุณาใช้ไฟล์ขนาดไม่เกิน 5MB ครับ)");
+                    document.getElementById('edit-file-doc').value = ""; 
+                    document.getElementById('edit-doc-base64').value = "";
+                    return;
+                }
+                const r=new FileReader(); 
+                r.onload=evt=>{ document.getElementById('edit-doc-base64').value=evt.target.result; }; 
+                r.readAsDataURL(f); 
+            }
+        });
+
         function openAddMachineModal() {
             document.getElementById('edit-form').reset(); document.getElementById('edit-is-new').value = "true"; document.getElementById('btn-del-machine').classList.add('hidden');
             document.getElementById('modal-machine-title').innerHTML = '<i class="fas fa-plus-circle text-green-500 mr-2"></i> เพิ่มเครื่องจักรใหม่';
@@ -725,8 +784,6 @@
         function closeRepairModal() { document.getElementById('repair-modal').classList.add('hidden'); }
         async function submitRepairForm(e) { e.preventDefault(); const payload = { action: "update", currentUser: currentUserRole, Machine_ID: document.getElementById('rep-machine-id').value, Status: document.getElementById('rep-status').value, Issue: document.getElementById('rep-issue').value, Action_Taken: document.getElementById('rep-action').value, Parts_Replaced: document.getElementById('rep-parts').value, Technician: currentUserRole, Downtime_Hours: document.getElementById('rep-downtime').value || 0 }; closeRepairModal(); showSaveToast("กำลังบันทึก..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); hideSaveToast("อัปเดตงานซ่อมเรียบร้อย"); fetchData(); } catch(e) { hideSaveToast(); showError("บันทึกไม่สำเร็จ"); } }
         async function quickCloseJob(id) { const result = await Swal.fire({ title: 'ปิดงานด่วน?', text: `ยืนยันว่าเครื่อง ${id} ปกติ?`, icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', confirmButtonText: 'ปิดเลย' }); if (!result.isConfirmed) return; showSaveToast("กำลังปิดงาน..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: "quick_close", Machine_ID: id, currentUser: currentUserRole}) }); hideSaveToast("ปิดงานสำเร็จ"); fetchData(); } catch(e) { hideSaveToast(); showError("ล้มเหลว"); } }
-        
-        document.getElementById('req-file-img').addEventListener('change', e => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=evt=>{ const img=new Image(); img.onload=()=>{ const cvs=document.createElement('canvas'); const scale=600/img.width; cvs.width=600; cvs.height=img.height*scale; cvs.getContext('2d').drawImage(img,0,0,cvs.width,cvs.height); document.getElementById('req-img-base64').value=cvs.toDataURL('image/jpeg',0.6); }; img.src=evt.target.result; }; r.readAsDataURL(f); }});
         
         async function submitReportIssue(e) { 
             e.preventDefault(); 
