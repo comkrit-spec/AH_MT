@@ -52,26 +52,34 @@
             <div id="sys-logo-name" class="flex items-center justify-center w-full px-4 text-center text-xl font-bold text-blue-400 tracking-wider">Smart CMMS</div>
             <div id="sync-indicator" class="absolute right-4 top-4 hidden flex items-center gap-1"><i class="fas fa-sync-alt text-[10px] text-green-400 sync-icon"></i></div>
         </div>
-        <nav class="p-4 space-y-2 flex-1 overflow-y-auto">
-            <p class="text-[10px] text-slate-400 font-semibold mb-2 uppercase tracking-wider">เมนูทั่วไป (Public)</p>
-            <button onclick="switchView('overview')" id="menu-overview" class="w-full text-left block px-4 py-3 bg-blue-600 text-white rounded-xl shadow font-medium transition"><i class="fas fa-chart-pie mr-3 w-5"></i> ภาพรวมเครื่องจักร</button>
-            <button onclick="switchView('request')" id="menu-request" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-exclamation-triangle mr-3 w-5 text-red-400"></i> แจ้งซ่อมเครื่องจักร</button>
-            <button onclick="switchView('relocate')" id="menu-relocate" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-truck mr-3 w-5 text-yellow-400"></i> แจ้งย้ายพิกัด (ย้ายกลุ่ม)</button>
+        
+        <!-- เมนูหลักแบบใหม่ สั้นกระชับ และดันการตั้งค่าลงล่าง -->
+        <nav class="p-4 flex-1 overflow-y-auto flex flex-col">
+            <div class="space-y-2">
+                <p class="text-[10px] text-slate-400 font-semibold mb-2 uppercase tracking-wider">เมนูทั่วไป (Public)</p>
+                <button onclick="switchView('overview')" id="menu-overview" class="w-full text-left block px-4 py-3 bg-blue-600 text-white rounded-xl shadow font-medium transition"><i class="fas fa-chart-pie mr-3 w-5"></i> ภาพรวม</button>
+                <button onclick="switchView('request')" id="menu-request" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-exclamation-triangle mr-3 w-5 text-red-400"></i> แจ้งซ่อม</button>
+                <button onclick="switchView('relocate')" id="menu-relocate" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-truck mr-3 w-5 text-yellow-400"></i> แจ้งย้ายพิกัด</button>
+            </div>
 
-            <div id="mt-restricted-menu" class="space-y-2 pt-2 hidden border-t border-slate-800 mt-4">
-                <p class="text-[10px] text-amber-400 font-semibold mb-2 uppercase tracking-wider mt-4">ส่วนจัดการ (MT & Admin)</p>
+            <div id="mt-restricted-menu" class="space-y-2 pt-4 hidden border-t border-slate-800 mt-4">
+                <p class="text-[10px] text-amber-400 font-semibold mb-2 uppercase tracking-wider">ส่วนจัดการ (MT)</p>
                 <button onclick="switchView('update')" id="menu-update" class="w-full flex justify-between items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition">
                     <span><i class="fas fa-tools mr-3 w-5"></i> รับงานซ่อม</span><span id="nav-pending-badge" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span>
                 </button>
-                <button onclick="switchView('master')" id="menu-master" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-list-alt mr-3 w-5"></i> ฐานข้อมูลเครื่อง (CRUD)</button>
-                <button onclick="switchView('pm')" id="menu-pm" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-calendar-check mr-3 w-5 text-green-400"></i> แผนบำรุงรักษา (PM)</button>
-                <button onclick="switchView('report-adv')" id="menu-report-adv" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-file-invoice mr-3 w-5 text-purple-400"></i> รายงานคัดกรองประวัติ</button>
-                
-                <div id="admin-menu" class="hidden">
-                    <button onclick="switchView('settings')" id="menu-settings" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition mt-4 bg-slate-800 border border-slate-700 shadow-inner"><i class="fas fa-cog mr-3 w-5 text-gray-400"></i> ตั้งค่าระบบ & โลโก้</button>
+                <button onclick="switchView('master')" id="menu-master" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-list-alt mr-3 w-5"></i> ข้อมูลเครื่อง</button>
+                <button onclick="switchView('pm')" id="menu-pm" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-calendar-check mr-3 w-5 text-green-400"></i> แผนซ่อมบำรุง (PM)</button>
+                <button onclick="switchView('report-adv')" id="menu-report-adv" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition"><i class="fas fa-file-invoice mr-3 w-5 text-purple-400"></i> รายงาน</button>
+            </div>
+            
+            <div class="mt-auto pt-8">
+                <div id="admin-menu" class="hidden border-t border-slate-700 pt-4">
+                    <p class="text-[10px] text-gray-400 font-semibold mb-2 uppercase tracking-wider"><i class="fas fa-user-shield mr-1"></i> สำหรับผู้ดูแลระบบ</p>
+                    <button onclick="switchView('settings')" id="menu-settings" class="w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition bg-slate-800 border border-slate-700 shadow-inner"><i class="fas fa-cog mr-3 w-5 text-gray-400"></i> ตั้งค่า</button>
                 </div>
             </div>
         </nav>
+
         <div class="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-between">
             <div class="truncate pr-2"><p class="text-xs text-slate-400">บัญชีผู้ใช้งาน</p><p class="text-sm font-semibold text-blue-300 truncate" id="user-display">พนักงานทั่วไป</p></div>
             <button id="btn-login-toggle" onclick="toggleAuth()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0">Login MT</button>
@@ -108,16 +116,12 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-                    <div id="card-all" onclick="setOverviewFilter('all')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md ring-2 ring-blue-400 scale-105 flex items-center"><div class="rounded-full bg-blue-100 p-3 mr-3 text-blue-600"><i class="fas fa-cogs text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">ทั้งหมด</p><h3 class="text-2xl font-black text-gray-800" id="stat-total">0</h3></div></div>
-                    <div id="card-ready" onclick="setOverviewFilter('ready')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md flex items-center"><div class="rounded-full bg-green-100 p-3 mr-3 text-green-600"><i class="fas fa-check-circle text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">พร้อมใช้งาน</p><h3 class="text-2xl font-black text-green-600" id="stat-ready">0</h3></div></div>
-                    <div id="card-fixing" onclick="setOverviewFilter('fixing')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md flex items-center"><div class="rounded-full bg-yellow-100 p-3 mr-3 text-yellow-600"><i class="fas fa-tools text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">กำลังซ่อม (MT)</p><h3 class="text-2xl font-black text-yellow-600" id="stat-fixing">0</h3></div></div>
-                    <div id="card-broken" onclick="setOverviewFilter('broken')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md flex items-center"><div class="rounded-full bg-red-100 p-3 mr-3 text-red-600"><i class="fas fa-exclamation-triangle text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">เสีย / รอซ่อม</p><h3 class="text-2xl font-black text-red-600" id="stat-broken">0</h3></div></div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border"><h3 class="font-bold text-xs text-gray-500 mb-2 text-center uppercase tracking-wider">สัดส่วนสถานะ</h3><div class="relative h-40 w-full"><canvas id="chartDashStatus"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border"><h3 class="font-bold text-xs text-gray-500 mb-2 text-center uppercase tracking-wider">จำนวนเครื่องแยกโซน</h3><div class="relative h-40 w-full"><canvas id="chartDashLoc"></canvas></div></div>
+                <!-- สรุปสถานะ 4 กล่อง (ลบกราฟออก) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div id="card-all" onclick="setOverviewFilter('all')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md ring-2 ring-blue-400 scale-105 flex items-center"><div class="rounded-full bg-blue-100 p-3 mr-3 text-blue-600"><i class="fas fa-cogs text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">ทั้งหมด</p><h3 class="text-2xl font-black text-gray-800"><span id="stat-total">0</span> <span class="text-xs font-bold text-gray-400">เครื่อง</span></h3></div></div>
+                    <div id="card-ready" onclick="setOverviewFilter('ready')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md flex items-center"><div class="rounded-full bg-green-100 p-3 mr-3 text-green-600"><i class="fas fa-check-circle text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">พร้อมใช้งาน</p><h3 class="text-2xl font-black text-green-600"><span id="stat-ready">0</span> <span class="text-xs font-bold text-green-400">เครื่อง</span></h3></div></div>
+                    <div id="card-fixing" onclick="setOverviewFilter('fixing')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md flex items-center"><div class="rounded-full bg-yellow-100 p-3 mr-3 text-yellow-600"><i class="fas fa-tools text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">กำลังซ่อม (MT)</p><h3 class="text-2xl font-black text-yellow-600"><span id="stat-fixing">0</span> <span class="text-xs font-bold text-yellow-500">เครื่อง</span></h3></div></div>
+                    <div id="card-broken" onclick="setOverviewFilter('broken')" class="dash-card bg-white p-4 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md flex items-center"><div class="rounded-full bg-red-100 p-3 mr-3 text-red-600"><i class="fas fa-exclamation-triangle text-lg"></i></div><div><p class="text-[10px] text-gray-500 font-bold uppercase">เสีย / รอซ่อม</p><h3 class="text-2xl font-black text-red-600"><span id="stat-broken">0</span> <span class="text-xs font-bold text-red-400">เครื่อง</span></h3></div></div>
                 </div>
 
                 <div class="flex justify-between items-center mb-3"><h3 class="font-bold text-gray-800" id="grid-title">เครื่องจักรทั้งหมด</h3></div>
@@ -153,7 +157,7 @@
             <!-- ================= 3. MASTER ================= -->
             <div id="view-master" class="view-section hidden bg-white p-6 rounded-2xl border shadow-sm">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-database text-blue-600 mr-2"></i>ฐานข้อมูลเครื่องจักร (Master Data)</h2>
+                    <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-database text-blue-600 mr-2"></i>ข้อมูลเครื่องจักร (Master Data)</h2>
                     <div class="flex flex-wrap gap-2">
                         <div class="flex rounded-lg shadow-sm border border-gray-200 overflow-hidden bg-white">
                             <button onclick="toggleMasterView('table')" id="btn-view-table" class="px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-600 border-r transition"><i class="fas fa-table mr-1"></i> ตาราง</button>
@@ -176,7 +180,7 @@
             <div id="view-update" class="view-section hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl border shadow-sm border-t-4 border-t-red-500">
                     <div class="flex justify-between items-center mb-4 border-b pb-2"><h2 class="text-xl font-bold text-red-600"><i class="fas fa-bell mr-2 animate-bounce"></i>งานเข้าใหม่ (รอรับงาน)</h2><span class="text-sm bg-red-100 text-red-600 font-bold px-3 py-1 rounded-full shadow-sm" id="badge-new-jobs">0 งาน</span></div>
-                    <div class="overflow-x-auto rounded-xl"><table class="w-full text-left min-w-max"><thead class="bg-gray-50 border-b border-t"><tr><th class="py-2.5 px-4 text-xs font-bold text-gray-500 w-32">เวลาที่แจ้ง</th><th class="py-2.5 px-4 text-xs font-bold text-gray-500 w-32">รหัสเครื่อง</th><th class="py-2.5 px-4 text-xs font-bold text-gray-500">อาการเสียที่แจ้ง</th><th class="py-2.5 px-4 text-xs font-bold text-center text-gray-500 w-48">ดำเนินการ</th></tr></thead><tbody id="jobs-new-body"></tbody></table></div>
+                    <div class="overflow-x-auto rounded-xl"><table class="w-full text-left min-w-max"><thead class="bg-gray-50 border-b border-t"><tr><th class="py-2.5 px-4 text-xs font-bold text-gray-500 w-32">เวลาที่แจ้ง</th><th class="py-2.5 px-4 text-xs font-bold text-gray-500 w-32">รหัสเครื่อง</th><th class="py-2.5 px-4 text-xs font-bold text-gray-500">อาการเสียที่แจ้ง</th><th class="py-2.5 px-4 text-xs font-bold text-center text-gray-500 w-56">ดำเนินการ</th></tr></thead><tbody id="jobs-new-body"></tbody></table></div>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border shadow-sm border-t-4 border-t-yellow-400">
                     <div class="flex justify-between items-center mb-4 border-b pb-2"><h2 class="text-xl font-bold text-yellow-600"><i class="fas fa-tools mr-2"></i>งานกำลังดำเนินการ (รออะไหล่/กำลังซ่อม)</h2><span class="text-sm bg-yellow-100 text-yellow-700 font-bold px-3 py-1 rounded-full shadow-sm" id="badge-ongoing-jobs">0 งาน</span></div>
@@ -376,7 +380,6 @@
         
         let isMTUser = false; let currentUserRole = "พนักงานทั่วไป"; let liffProfileName = "พนักงานทั่วไป";
         let autoSyncTimer = null; 
-        let chartDashStatus = null; let chartDashLoc = null; 
         let currentScannedMachine = null; let currentOverviewFilter = 'all'; let currentProfileMachineId = null;
 
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
@@ -414,8 +417,20 @@
         function switchView(v) { 
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); 
             document.getElementById(`view-${v}`).classList.remove('hidden'); 
-            document.querySelectorAll('aside nav button').forEach(el => el.className = "w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition");
-            const btn = document.getElementById(`menu-${v}`); if(btn) btn.className = "w-full text-left block px-4 py-3 bg-blue-600 text-white rounded-xl shadow font-medium transition";
+            
+            // รีเซ็ตคลาสปุ่มเมนูทั้งหมด
+            document.querySelectorAll('aside nav button').forEach(el => {
+                if (el.id === 'menu-settings') {
+                    el.className = "w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition bg-slate-800 border border-slate-700 shadow-inner";
+                } else {
+                    el.className = "w-full text-left block px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-xl font-medium transition";
+                }
+            });
+            
+            // แอคทีฟปุ่มที่เลือก
+            const btn = document.getElementById(`menu-${v}`); 
+            if(btn) btn.className = "w-full text-left block px-4 py-3 bg-blue-600 text-white rounded-xl shadow font-medium transition";
+            
             if(window.innerWidth < 768) { document.getElementById('sidebar').classList.add('-translate-x-full'); let overlay = document.getElementById('sidebar-overlay'); if(overlay) overlay.classList.add('hidden'); }
             if(v==='settings') renderSettingsPage(); if(v==='report-adv') applyAdvancedFilter(); if(v==='pm') renderPMList();
         }
@@ -521,12 +536,12 @@
             renderDashboardCards(globalData.machines, true); 
         }
 
+        // Dashboard แบบใหม่ ตัดกราฟออก
         function renderDashboardCards(machines, gridOnly = false) {
             const grid = document.getElementById('machine-grid'); grid.innerHTML = ""; 
-            let ready=0, fixing=0, broken=0; let locCounts = {};
+            let ready=0, fixing=0, broken=0;
             machines.forEach(m => {
                 if(m.Status.includes("🟢")) ready++; else if(m.Status.includes("🟡")) fixing++; else if(m.Status.includes("🔴")) broken++;
-                if(!gridOnly) locCounts[m.Location] = (locCounts[m.Location] || 0) + 1;
                 let show = false;
                 if(currentOverviewFilter === 'all') show = true;
                 if(currentOverviewFilter === 'ready' && m.Status.includes("🟢")) show = true;
@@ -558,12 +573,10 @@
             }
 
             if (gridOnly) return; 
-            document.getElementById('stat-total').innerText = machines.length; document.getElementById('stat-ready').innerText = ready; document.getElementById('stat-fixing').innerText = fixing; document.getElementById('stat-broken').innerText = broken;
-
-            if(chartDashStatus) { chartDashStatus.data.datasets[0].data = [ready, fixing, broken]; chartDashStatus.update(); } 
-            else { chartDashStatus = new Chart(document.getElementById('chartDashStatus').getContext('2d'), { type: 'doughnut', data: { labels: ['พร้อม', 'ซ่อม', 'เสีย'], datasets: [{ data: [ready, fixing, broken], backgroundColor: ['#22c55e', '#eab308', '#ef4444'], borderWidth: 2, borderColor: '#fff' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } }, cutout: '70%', animation: { animateScale: true } } }); }
-            if(chartDashLoc) { chartDashLoc.data.labels = Object.keys(locCounts); chartDashLoc.data.datasets[0].data = Object.values(locCounts); chartDashLoc.update(); } 
-            else { chartDashLoc = new Chart(document.getElementById('chartDashLoc').getContext('2d'), { type: 'bar', data: { labels: Object.keys(locCounts), datasets: [{ label: 'จำนวน', data: Object.values(locCounts), backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: {font: {size: 9}} }, y: { beginAtZero: true, ticks: { stepSize: 1, font: {size: 9} } } }, animation: { duration: 1500 } } }); }
+            document.getElementById('stat-total').innerText = machines.length; 
+            document.getElementById('stat-ready').innerText = ready; 
+            document.getElementById('stat-fixing').innerText = fixing; 
+            document.getElementById('stat-broken').innerText = broken;
         }
 
         // --- Master CRUD ---
@@ -640,20 +653,41 @@
 
         // --- MT Jobs & Public Forms ---
         function renderMTJobsList() {
-            const tbodyNew = document.getElementById('jobs-new-body'); tbodyNew.innerHTML = ""; const tbodyOngoing = document.getElementById('jobs-ongoing-body'); tbodyOngoing.innerHTML = ""; let newCount = 0, ongoingCount = 0;
+            const tbodyNew = document.getElementById('jobs-new-body'); tbodyNew.innerHTML = ""; 
+            const tbodyOngoing = document.getElementById('jobs-ongoing-body'); tbodyOngoing.innerHTML = ""; 
+            let newCount = 0, ongoingCount = 0;
+            
             globalData.machines.forEach(m => {
                 if (m.Status.includes("🔴") || m.Status.includes("🟡")) {
-                    const hList = globalData.history.filter(h => h.Machine_ID === m.Machine_ID); const latestH = hList.length > 0 ? hList[hList.length - 1] : { Issue: "ไม่ระบุ", Timestamp: m.Last_Update, Issue_Image_URL: "-" };
-                    let imgLink = latestH.Issue_Image_URL && latestH.Issue_Image_URL.length > 5 && latestH.Issue_Image_URL !== "-" ? `<a href="${latestH.Issue_Image_URL}" target="_blank" class="text-blue-600 bg-blue-50 px-2 py-1 rounded ml-1 shadow-sm border border-blue-100 inline-block mt-1"><i class="fas fa-image"></i> รูป</a>` : '';
-                    if (m.Status.includes("🔴")) { tbodyNew.innerHTML += `<tr class="border-b text-xs hover:bg-red-50 transition"><td class="py-3 px-4 text-gray-500 align-middle whitespace-nowrap">${formatDateCustom(latestH.Timestamp)}</td><td class="py-3 px-4 font-black text-gray-800 align-middle">${m.Machine_ID}</td><td class="py-3 px-4 text-red-600 font-medium align-middle">${latestH.Issue} <div>${imgLink}</div></td><td class="py-3 px-4 text-center align-middle whitespace-nowrap w-48"><button onclick="openRepairModal('${m.Machine_ID}', '${latestH.Issue}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition inline-flex items-center"><i class="fas fa-tools mr-1"></i> รับซ่อม</button><button onclick="quickCloseJob('${m.Machine_ID}')" class="bg-green-500 hover:bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-bold shadow-sm transition ml-1 inline-flex items-center" title="ปิดงานด่วน"><i class="fas fa-check-double"></i></button></td></tr>`; newCount++; } 
-                    else { tbodyOngoing.innerHTML += `<tr class="border-b text-xs hover:bg-yellow-50 transition"><td class="py-3 px-4 text-gray-500 align-middle whitespace-nowrap">${formatDateCustom(m.Last_Update)}</td><td class="py-3 px-4 font-black text-gray-800 align-middle">${m.Machine_ID}</td><td class="py-3 px-4 text-yellow-700 font-medium align-middle"><i class="fas fa-wrench mr-1"></i> ${latestH.Action_Taken || latestH.Issue}</td><td class="py-3 px-4 text-center align-middle whitespace-nowrap w-32"><button onclick="openRepairModal('${m.Machine_ID}', '${latestH.Issue}')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition inline-flex items-center"><i class="fas fa-edit mr-1"></i> อัปเดต/ปิดงาน</button></td></tr>`; ongoingCount++; }
+                    const hList = globalData.history.filter(h => h.Machine_ID === m.Machine_ID); 
+                    const latestH = hList.length > 0 ? hList[hList.length - 1] : { Issue: "ไม่ระบุ", Timestamp: m.Last_Update, Issue_Image_URL: "-" };
+                    
+                    // ปรับปุ่มดูรูปภาพ เป็น Pop-up ผ่าน SweetAlert2
+                    let imgLink = latestH.Issue_Image_URL && latestH.Issue_Image_URL.length > 5 && latestH.Issue_Image_URL !== "-" 
+                        ? `<button onclick="Swal.fire({imageUrl: '${latestH.Issue_Image_URL}', imageAlt: 'รูปอาการเสีย', confirmButtonText: 'ปิดหน้าต่าง', confirmButtonColor: '#3b82f6', customClass: { image: 'rounded-xl max-h-[70vh] object-contain' }})" class="text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg ml-2 shadow-sm border border-blue-200 inline-flex items-center text-[10px] font-bold transition"><i class="fas fa-image mr-1"></i> ดูรูป</button>` 
+                        : '';
+                    
+                    if (m.Status.includes("🔴")) { 
+                        tbodyNew.innerHTML += `<tr class="border-b text-xs hover:bg-red-50 transition"><td class="py-3 px-4 text-gray-500 align-middle whitespace-nowrap">${formatDateCustom(latestH.Timestamp)}</td><td class="py-3 px-4 font-black text-gray-800 align-middle">${m.Machine_ID}</td><td class="py-3 px-4 text-red-600 font-medium align-middle flex items-center">${latestH.Issue} ${imgLink}</td><td class="py-3 px-4 text-center align-middle whitespace-nowrap w-48"><button onclick="openRepairModal('${m.Machine_ID}', '${latestH.Issue}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition inline-flex items-center"><i class="fas fa-tools mr-1"></i> รับซ่อม</button><button onclick="quickCloseJob('${m.Machine_ID}')" class="bg-green-500 hover:bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-bold shadow-sm transition ml-1 inline-flex items-center" title="ปิดงานด่วน"><i class="fas fa-check-double"></i></button></td></tr>`; 
+                        newCount++; 
+                    } else { 
+                        tbodyOngoing.innerHTML += `<tr class="border-b text-xs hover:bg-yellow-50 transition"><td class="py-3 px-4 text-gray-500 align-middle whitespace-nowrap">${formatDateCustom(m.Last_Update)}</td><td class="py-3 px-4 font-black text-gray-800 align-middle">${m.Machine_ID}</td><td class="py-3 px-4 text-yellow-700 font-medium align-middle"><i class="fas fa-wrench mr-1"></i> ${latestH.Action_Taken || latestH.Issue}</td><td class="py-3 px-4 text-center align-middle whitespace-nowrap w-32"><button onclick="openRepairModal('${m.Machine_ID}', '${latestH.Issue}')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition inline-flex items-center"><i class="fas fa-edit mr-1"></i> อัปเดต/ปิดงาน</button></td></tr>`; 
+                        ongoingCount++; 
+                    }
                 }
             });
-            document.getElementById('badge-new-jobs').innerText = `${newCount} งาน`; document.getElementById('badge-ongoing-jobs').innerText = `${ongoingCount} งาน`;
-            const navBadge = document.getElementById('nav-pending-badge'); if (newCount + ongoingCount > 0) { navBadge.classList.remove('hidden'); navBadge.innerText = newCount + ongoingCount; } else { navBadge.classList.add('hidden'); }
+            
+            document.getElementById('badge-new-jobs').innerText = `${newCount} งาน`; 
+            document.getElementById('badge-ongoing-jobs').innerText = `${ongoingCount} งาน`;
+            const navBadge = document.getElementById('nav-pending-badge'); 
+            
+            if (newCount + ongoingCount > 0) { navBadge.classList.remove('hidden'); navBadge.innerText = newCount + ongoingCount; } 
+            else { navBadge.classList.add('hidden'); }
+            
             if(newCount === 0) tbodyNew.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">✨ ไม่มีงานแจ้งซ่อมเข้าใหม่</td></tr>`;
             if(ongoingCount === 0) tbodyOngoing.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">✅ ไม่มีงานที่ค้างดำเนินการ</td></tr>`;
         }
+
         function openRepairModal(id, issue) { document.getElementById('repair-mac-id').innerText = id; document.getElementById('repair-issue-text').innerText = issue; document.getElementById('rep-machine-id').value = id; document.getElementById('rep-issue').value = issue; document.getElementById('rep-action').value = ""; document.getElementById('rep-parts').value = ""; document.getElementById('rep-downtime').value = 0; document.getElementById('repair-modal').classList.remove('hidden'); }
         function closeRepairModal() { document.getElementById('repair-modal').classList.add('hidden'); }
         async function submitRepairForm(e) { e.preventDefault(); const payload = { action: "update", currentUser: currentUserRole, Machine_ID: document.getElementById('rep-machine-id').value, Status: document.getElementById('rep-status').value, Issue: document.getElementById('rep-issue').value, Action_Taken: document.getElementById('rep-action').value, Parts_Replaced: document.getElementById('rep-parts').value, Technician: currentUserRole, Downtime_Hours: document.getElementById('rep-downtime').value || 0 }; closeRepairModal(); showSaveToast("กำลังบันทึก..."); try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); hideSaveToast("อัปเดตงานซ่อมเรียบร้อย"); fetchData(); } catch(e) { hideSaveToast(); showError("บันทึกไม่สำเร็จ"); } }
